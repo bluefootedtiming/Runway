@@ -6,12 +6,12 @@ import Root from './containers/Root';
 import { configureStore, history } from './store/configureStore';
 import './app.global.css';
 
-import Server from './server';
-
-const s = new Server();
-s.start();
+import RfidRelay from './server';
 
 const store = configureStore();
+
+const relay = new RfidRelay(store);
+relay.start();
 
 render(
   <AppContainer>

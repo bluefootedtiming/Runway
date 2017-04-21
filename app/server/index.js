@@ -1,12 +1,15 @@
 import net from 'net';
+import { bindActionCreators } from 'redux';
+import * as CounterActions from '../actions/counter';
 
 export default class RfidRelay {
+  store;
   rfidListener: net.Server;
   port: number = 3988;
   runScoreConn: net.Socket;
 
-  constructor() {
-    this.rfidListener = net.createServer();
+  constructor(store) {
+    this.store = store;
   }
 
   start() {
@@ -15,42 +18,51 @@ export default class RfidRelay {
   }
 
   stop() {
+    console.log('Stopping');
     this.rfidListener.close();
     this.runScoreConn.destroy();
   }
 
   _startRfidListener() {
+    this.rfidListener = net.createServer();
     this.rfidListener.on('connection', this.handleConnection);
-    this.rfidListener.listen(this.port, () => {
+
+    this.rfidListener.listen(3988, () => {
+      this.store.dispatch(CounterActions.decrement());
       console.log('RFID listener started');
     });
   }
 
   _connectToRunScore() {
-    const runScore = net.connect({
+    this.runScore = net.connect({
       host: '192.168.1.4',
       port: 3988
     });
 
-    runScore.on('connect', (conn) => {
+    this.runScore.on('connect', (conn) => {
       console.log('Connected to RunScore');
+      this.store.dispatch(CounterActions.decrement());
       this.runScoreConn = conn;
     });
 
-    runScore.on('close', () => {
+    this.runScore.on('close', () => {
       console.log('Disconnected from RunScore');
       this.runScoreConn = null;
     });
   }
 
-  handleConnection(conn) { // eslint-disable-line
+  handleConnection = (conn) => {
+    const dispatch = this.store.dispatch;
+    const runScore = this.runScore;
+    if (!runScore) return;
+
     conn.setEncoding('utf8');
 
     conn.on('data', (data) => {
-      console.log('Data: ', data);
-      this.runScore.write(data);
+      dispatch(CounterActions.increment());
+      runScore.write(data);
     });
-  }
+  };
 
 }
 
