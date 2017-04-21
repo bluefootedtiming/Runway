@@ -1,3 +1,12 @@
+# AlienRunway
+
+TagStreamCustomFormat:
+%i    - Tag/Bib
+%N    - Reader name / Location
+%T - Last time seen
+
+RSBTOI,%i,%T,%N
+
 # electron-react-boilerplate
 
 ### A Boilerplate for Scalable Cross-Platform Desktop Apps
