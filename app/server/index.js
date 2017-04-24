@@ -1,6 +1,5 @@
 import net from 'net';
-import { bindActionCreators } from 'redux';
-import * as CounterActions from '../actions/counter';
+// import { bindActionCreators } from 'redux';
 
 export default class RfidRelay {
   store;
@@ -28,7 +27,7 @@ export default class RfidRelay {
     this.rfidListener.on('connection', this.handleConnection);
 
     this.rfidListener.listen(3988, () => {
-      this.store.dispatch(CounterActions.decrement());
+      // this.store.dispatch(CounterActions.decrement());
       console.log('RFID listener started');
     });
   }
@@ -41,7 +40,7 @@ export default class RfidRelay {
 
     this.runScore.on('connect', (conn) => {
       console.log('Connected to RunScore');
-      this.store.dispatch(CounterActions.decrement());
+      // this.store.dispatch(CounterActions.decrement());
       this.runScoreConn = conn;
     });
 
@@ -52,14 +51,14 @@ export default class RfidRelay {
   }
 
   handleConnection = (conn) => {
-    const dispatch = this.store.dispatch;
+    // const dispatch = this.store.dispatch;
     const runScore = this.runScore;
     if (!runScore) return;
 
     conn.setEncoding('utf8');
 
     conn.on('data', (data) => {
-      dispatch(CounterActions.increment());
+      // dispatch(CounterActions.increment());
       runScore.write(data);
     });
   };
