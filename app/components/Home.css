@@ -1,14 +1,7 @@
 .container {
+  display: flex;
+  justify-content: center;
+  height: 100%;
   position: absolute;
-  top: 30%;
-  left: 10px;
-  text-align: center;
-}
-
-.container h2 {
-  font-size: 5rem;
-}
-
-.container a {
-  font-size: 1.4rem;
+  width: 100%;
 }

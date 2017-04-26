@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
+import Input from 'react-debounce-input';
 import moment from 'moment';
+
+// import Input from 'react-toolbox/lib/input';
+import styles from './Timer.scss';
 
 class Timer extends Component {
   props: {
@@ -30,6 +34,7 @@ class Timer extends Component {
 
   // Update hours, minutes, or seconds in state
   handleChange = (event) => {
+    console.log('handling');
     const { name, value } = event.target;
     this.setState({
       [name]: value
@@ -69,12 +74,22 @@ class Timer extends Component {
   render() {
     const { running } = this.props;
     const { hours, minutes, seconds } = this.state;
+    const inputProps = {
+      maxLength: 2,
+      debounceTimeout: 500,
+      disabled: running,
+      onChange: this.handleChange
+    };
+
+    const format = n => (n < 10 ? `0${Number(n)}` : n);
 
     return (
-      <div>
-        <input name="hours" onChange={this.handleChange} value={hours} disabled={running} />
-        <input name="minutes" onChange={this.handleChange} value={minutes} disabled={running} />
-        <input name="seconds" onChange={this.handleChange} value={seconds} disabled={running} />
+      <div className={styles.container}>
+        <div className="clock">
+          <Input name="hours" value={format(hours)} {...inputProps} />
+          <Input name="minutes" value={format(minutes)} {...inputProps} />
+          <Input name="seconds" value={format(seconds)} {...inputProps} />
+        </div>
 
         <button onClick={this.toggleTimer}>
           {running ? 'Stop' : 'Start'}

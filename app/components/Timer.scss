@@ -1,0 +1,24 @@
+.container {
+  text-align: center;
+  margin: 1rem auto;
+
+  .clock {
+    margin: 0 auto;
+  }
+
+  input {
+    height: 3rem;
+    font-size: 4rem;
+    margin-right: 0.25rem;
+    order: 0;
+    padding: 0.2rem;
+    width: 5rem;
+  }
+
+  button {
+    font-size: 2rem;
+    margin: 1rem auto;
+    width: 80%;
+  }
+}
+
