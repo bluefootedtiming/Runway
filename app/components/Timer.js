@@ -33,9 +33,14 @@ class Timer extends Component {
   }
 
   // Update hours, minutes, or seconds in state
-  handleChange = (event) => {
-    console.log('handling');
-    const { name, value } = event.target;
+  handleChange = event => {
+    const { name } = event.target;
+    let { value } = event.target;
+
+    if (['minutes', 'seconds'].includes(name) && value > 59) {
+      value = 59;
+    }
+
     this.setState({
       [name]: value
     });
@@ -91,7 +96,7 @@ class Timer extends Component {
           <Input name="seconds" value={format(seconds)} {...inputProps} />
         </div>
 
-        <button onClick={this.toggleTimer}>
+        <button onClick={this.toggleTimer} className={!running && 'running'}>
           {running ? 'Stop' : 'Start'}
         </button>
       </div>

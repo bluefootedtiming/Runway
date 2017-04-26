@@ -7,8 +7,9 @@
   }
 
   input {
-    height: 3rem;
+    border: none;
     font-size: 4rem;
+    height: 3rem;
     margin-right: 0.25rem;
     order: 0;
     padding: 0.2rem;
@@ -16,9 +17,16 @@
   }
 
   button {
+    color: #fff;
+    background: green;
+    border: 2px solid #fff;
     font-size: 2rem;
     margin: 1rem auto;
-    width: 80%;
+    width: 60%;
+
+    &.running {
+      background-color: #f00;
+    }
   }
 }
 
