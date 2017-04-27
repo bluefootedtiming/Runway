@@ -55,26 +55,31 @@ export default class RfidRelay {
   //    to the end of the formatted string sent to RSServer
   //    when we save the string to the csv log files.
   handleConnection = (conn) => {
-    // const dispatch = this.store.dispatch;
     const runScore = this.runScore;
     if (!runScore) return;
 
     conn.setEncoding('utf8');
-    conn.on('data', (data) => {
-      // Need to remove any leading zeros on the bib
+
+    conn.on('data', (rawReaderData) => {
+      const { running, startTime } = this.store.getState().timer;
+      if (!running) return;
+
+      const readerDataArray = rawReaderData.split(',');
+      // Remove any leading zeros on the bib
       // ex: data => 0542,20:09:07.394,Finish
       //          => ['0542','20:09:07.394','Finish']
       //     bib = data[0]
-      const array = data.split(',');
-      array[0] = parseInt(array[0], 10);
-      // Need to replace alien's time with elasped time
+      readerDataArray[0] = parseInt(readerDataArray[0], 10);
+      // Replace alien's time with elasped time
       // Difference between current & start
-      const elapsed = moment.duration(moment.now() - this.store.getState().timer.startTime);
-      array[1] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
+      const elapsed = moment.duration(moment.now() - startTime);
+      readerDataArray[1] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
       // Add RSBI to the front of the string
       // so RSServer knows how to format
-      array.unshift('RSBI');
-      runScore.write(`${array.join(',')}\r`);
+      readerDataArray.unshift('RSBI');
+      const formattedData = `${readerDataArray.join(',')}\r`;
+      console.log(formattedData);
+      runScore.write(formattedData);
     });
   };
 
