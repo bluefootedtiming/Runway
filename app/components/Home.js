@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import styles from './Home.css';
 
 import TimerPanel from '../containers/TimerPanel';
-import Toolbar from '../containers/Toolbar';
+import Toolbar from '../components/Toolbar';
 
 export default class Home extends Component {
 

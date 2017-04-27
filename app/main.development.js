@@ -48,7 +48,8 @@ app.on('ready', async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: 400,
-    height: 200
+    height: 200,
+    resizable: false
   });
 
   const url = (process.env.NODE_ENV === 'development')

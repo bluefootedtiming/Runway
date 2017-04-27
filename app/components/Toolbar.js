@@ -6,6 +6,8 @@ import StatusDisplay from '../components/StatusDisplay';
 import Configuration from '../components/Configuration';
 import styles from './toolbar.scss';
 
+const { BrowserWindow } = require('electron').remote;
+
 // import * as ConfigureActions from '../actions/configure';
 
 class Tools extends Component {
@@ -21,14 +23,14 @@ class Tools extends Component {
   }
 
   toggleTool = e => {
-    const tool = e.target.name;
+    const tool = e.currentTarget.name;
     const { currentTool: previousTool } = this.state;
     const currentTool = tool === previousTool ? null : tool;
-    if (currentTool) {
-      // resize window
-      // const electron = require('electron').remote; // eslint-disable-line global-require
-      // electron
-    }
+
+    const win = BrowserWindow.fromId(1);
+    const width = currentTool ? 500 : 200;
+    win.setSize(400, width, true);
+
     this.setState({ currentTool });
   }
 
