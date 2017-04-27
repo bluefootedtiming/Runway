@@ -51,16 +51,6 @@ export default class RfidRelay {
     });
   }
 
-  getFormattedTime = (time) => `${
-    parseInt(time / 1000 / 60 / 60, 10)
-  }:${
-    parseInt(time / 1000 / 60, 10)
-  }:${
-    parseInt(time / 1000, 10)
-  }.${
-    parseInt(time % 1000, 10)
-  }`;
-
   // TODO: There needs Alien timestamps need to be appended
   //    to the end of the formatted string sent to RSServer
   //    when we save the string to the csv log files.
@@ -76,12 +66,11 @@ export default class RfidRelay {
       //          => ['0542','20:09:07.394','Finish']
       //     bib = data[0]
       const array = data.split(',');
-      const bib = parseInt(array[0], 10);
-      array[0] = bib;
       // Need to replace aliens time with timer time
+      array[0] = parseInt(array[0], 10);
       // Difference between current & start
-      const { startTime } = this.store.getState().timer;
-      array[1] = this.getFormattedTime(moment.now() - startTime);
+      const elapsed = moment.duration(moment.now() - this.store.getState().timer.startTime);
+      array[1] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
       // Add RSBI to the front of the string
       // so RSServer knows the format
       array.unshift('RSBI');
