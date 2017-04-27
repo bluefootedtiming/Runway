@@ -1,6 +1,6 @@
 import net from 'net';
 import moment from 'moment';
-// import { bindActionCreators } from 'redux';
+import { addMessage } from '../actions/status';
 
 export default class RfidRelay {
   store;
@@ -27,9 +27,12 @@ export default class RfidRelay {
     this.rfidListener = net.createServer();
     this.rfidListener.on('connection', this.handleConnection);
 
+    this.rfidListener.on('error', (error) => {
+      this.store.dispatch(addMessage(error.message));
+    });
+
     this.rfidListener.listen(3988, () => {
-      // this.store.dispatch(CounterActions.decrement());
-      console.log('RFID listener started');
+      this.store.dispatch(addMessage('RFID listener started'));
     });
   }
 
@@ -39,14 +42,12 @@ export default class RfidRelay {
       port: 3988
     });
 
-    this.runScore.on('connect', (conn) => {
-      console.log('Connected to RunScore');
-      // this.store.dispatch(CounterActions.decrement());
-      this.runScoreConn = conn;
+    this.runScore.on('error', (error) => {
+      this.store.dispatch(addMessage(`Unable to connect to RSServer: ${error.message}`));
     });
 
     this.runScore.on('close', () => {
-      console.log('Disconnected from RunScore');
+      this.store.dispatch(addMessage('Disconnected from RSServer'));
       this.runScoreConn = null;
     });
   }
