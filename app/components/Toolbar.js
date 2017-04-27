@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
-import Status from '../containers/Status';
-import Config from '../containers/Config';
+import Status from '../containers/AppStatus';
+import Config from '../containers/AppConfig';
 import styles from './toolbar.scss';
 
 const { BrowserWindow } = require('electron').remote;
