@@ -66,13 +66,13 @@ export default class RfidRelay {
       //          => ['0542','20:09:07.394','Finish']
       //     bib = data[0]
       const array = data.split(',');
-      // Need to replace aliens time with timer time
       array[0] = parseInt(array[0], 10);
+      // Need to replace alien's time with elasped time
       // Difference between current & start
       const elapsed = moment.duration(moment.now() - this.store.getState().timer.startTime);
       array[1] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
       // Add RSBI to the front of the string
-      // so RSServer knows the format
+      // so RSServer knows how to format
       array.unshift('RSBI');
       runScore.write(`${array.join(',')}\r`);
     });
