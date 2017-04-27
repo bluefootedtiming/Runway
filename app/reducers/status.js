@@ -1,25 +1,26 @@
 // @flow
-import { INCREMENT_COUNTER, DECREMENT_COUNTER } from '../actions/counter';
-
-type actionType = {
-  type: string,
-  payload: string
-};
+import { ADD_MESSAGE } from '../actions/status';
 
 export type statusStateType = {
   messages: Array<string>
+};
+
+type actionType = {
+  type: string,
+  payload: ?string
 };
 
 const initialState = {
   messages: ['Started']
 };
 
-export default function counter(state: statusStateType = initialState, action: actionType) {
+export default function status(state: statusStateType = initialState, action: actionType) {
+  console.log(action);
   switch (action.type) {
-    case ADD_STATUS:
-      return state + 1;
-    case CLEAR_STATUS:
-      return state - 1;
+    case ADD_MESSAGE:
+      return {
+        messages: state.messages.concat(action.payload)
+      };
     default:
       return state;
   }
