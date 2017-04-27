@@ -7,7 +7,7 @@ export type statusStateType = {
 
 type actionType = {
   type: string,
-  payload: ?string
+  payload: ?any // eslint-disable-line
 };
 
 const initialState = {
@@ -15,7 +15,6 @@ const initialState = {
 };
 
 export default function status(state: statusStateType = initialState, action: actionType) {
-  console.log(action);
   switch (action.type) {
     case ADD_MESSAGE:
       return {
