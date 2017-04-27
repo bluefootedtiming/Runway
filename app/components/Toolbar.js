@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
-// import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 
-import StatusDisplay from '../components/StatusDisplay';
-import Configuration from '../components/Configuration';
+import Status from '../containers/Status';
+import Config from '../containers/Config';
 import styles from './toolbar.scss';
 
 const { BrowserWindow } = require('electron').remote;
 
 // import * as ConfigureActions from '../actions/configure';
 
-class Tools extends Component {
+export default class Tools extends Component {
   state: {
     currentTool?: string
   };
@@ -48,14 +46,11 @@ class Tools extends Component {
 
         { currentTool && (
           <div className="tool">
-            { currentTool === 'status' && <StatusDisplay messages={[]} />}
-            { currentTool === 'config' && <Configuration config={[]} />}
+            { currentTool === 'status' && <Status messages={[]} />}
+            { currentTool === 'config' && <Config config={[]} />}
           </div>
         )}
       </div>
     );
   }
 }
-
-export default connect()(Tools);
-
