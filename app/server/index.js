@@ -1,4 +1,5 @@
 import net from 'net';
+import moment from 'moment';
 // import { bindActionCreators } from 'redux';
 
 export default class RfidRelay {
@@ -50,16 +51,41 @@ export default class RfidRelay {
     });
   }
 
+  getFormattedTime = (time) => `${
+    parseInt(time / 1000 / 60 / 60, 10)
+  }:${
+    parseInt(time / 1000 / 60, 10)
+  }:${
+    parseInt(time / 1000, 10)
+  }.${
+    parseInt(time % 1000, 10)
+  }`;
+
+  // TODO: There needs Alien timestamps need to be appended
+  //    to the end of the formatted string sent to RSServer
+  //    when we save the string to the csv log files.
   handleConnection = (conn) => {
     // const dispatch = this.store.dispatch;
     const runScore = this.runScore;
     if (!runScore) return;
 
     conn.setEncoding('utf8');
-
     conn.on('data', (data) => {
-      // dispatch(CounterActions.increment());
-      runScore.write(data);
+      // Need to remove any leading zeros on the bib
+      // ex: data => 0542,20:09:07.394,Finish
+      //          => ['0542','20:09:07.394','Finish']
+      //     bib = data[0]
+      const array = data.split(',');
+      const bib = parseInt(array[0], 10);
+      array[0] = bib;
+      // Need to replace aliens time with timer time
+      // Difference between current & start
+      const { startTime } = this.store.getState().timer;
+      array[1] = this.getFormattedTime(moment.now() - startTime);
+      // Add RSBI to the front of the string
+      // so RSServer knows the format
+      array.unshift('RSBI');
+      runScore.write(`${array.join(',')}\r`);
     });
   };
 
