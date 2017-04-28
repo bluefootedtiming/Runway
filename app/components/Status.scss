@@ -1,6 +1,13 @@
 
-textarea {
-  height: 300px;
-  width: 100%;
-  resize: none;
+.status_container {
+  height: 275px;
+  margin: 10px;
+
+  textarea {
+    font-size: 0.7em;
+    line-height:1.2em;
+    height: 100%;
+    width: 100%;
+    resize: none;
+  }
 }

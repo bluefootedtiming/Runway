@@ -27,13 +27,15 @@ class Status extends Component {
   render() {
     const { messages } = this.props;
     const textareaProps = {
-      style: styles.textarea,
       rows: messages.length,
-      value: messages.join('\n')
+      value: messages.join('\n'),
+      readOnly: true
     };
 
     return (
-      <textarea id="status" {...textareaProps} />
+      <div className={styles.status_container}>
+        <textarea id="status" {...textareaProps} />
+      </div>
     );
   }
 }
