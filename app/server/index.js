@@ -25,7 +25,7 @@ export default class RfidRelay {
 
   start() {
     this._startRfidListener(); // eslint-disable-line
-    this._connectToRunScore(MAX_ATTEMPTS); // eslint-disable-line
+    this._connectToRunScore(); // eslint-disable-line
   }
 
   stop() {
@@ -52,7 +52,7 @@ export default class RfidRelay {
     });
   }
 
-  _connectToRunScore(maxAttempts: number = 5) {
+  _connectToRunScore() {
     const { runScoreAddress, runScorePort } = this.store.getState().config;
     const serverInfo = {
       host: runScoreAddress,
@@ -62,13 +62,14 @@ export default class RfidRelay {
 
     this.runScore = new net.Socket();
     this.runScore.setTimeout(1000);
+
     this.attemptRSServerConnection(serverInfo);
 
     this.runScore.on('error', () => {
       currentAttempts += 1;
       log.error('Failed to connect to RSServer.');
-      log.error(`(${currentAttempts}) reconnect attempts left.`);
-      if (currentAttempts >= maxAttempts) {
+      log.error(`(${MAX_ATTEMPTS - currentAttempts}) reconnect attempts left.`);
+      if (MAX_ATTEMPTS <= currentAttempts) {
         log.error(`Cannot connect to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
         log.error('Please review server setup.');
       } else {
