@@ -3,15 +3,14 @@ import {
   SET_RUNSCORE_PORT,
   SET_LISTEN_PORT,
   ADD_READER,
-  DEL_READER,
-  readerType
+  DEL_READER
 } from '../actions/config';
 
 export type configStateType = {
   runScoreAddress: string,
   runScorePort: number,
   listenPort: number,
-  readerMap: Array<readerType>
+  readerMap: { [string]: string }
 };
 
 const initialState = {
