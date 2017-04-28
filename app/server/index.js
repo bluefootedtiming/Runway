@@ -5,7 +5,6 @@ import { addMessage } from '../actions/status';
 export default class RfidRelay {
   store;
   rfidListener: net.Server;
-  port: number = 3988;
   runScoreConn: net.Socket;
 
   constructor(store) {
@@ -24,6 +23,8 @@ export default class RfidRelay {
   }
 
   _startRfidListener() {
+    const { listenPort } = this.store.getState().config;
+
     this.rfidListener = net.createServer();
     this.rfidListener.on('connection', this.handleConnection);
 
@@ -31,16 +32,25 @@ export default class RfidRelay {
       this.store.dispatch(addMessage(error.message));
     });
 
-    this.rfidListener.listen(3988, () => {
+    this.rfidListener.listen(listenPort, () => {
       this.store.dispatch(addMessage('RFID listener started'));
     });
   }
 
   _connectToRunScore() {
-    this.runScore = net.connect({
-      host: '192.168.1.4',
-      port: 3988
-    });
+    const { runScoreAddress, runScorePort } = this.store.getState().config;
+
+    const serverInfo = {
+      host: runScoreAddress,
+      port: runScorePort
+    };
+
+    const attemptConnection = (conn) => {
+      this.store.dispatch(addMessage('Connected to RSServer'));
+      this.runScoreConn = conn;
+    };
+
+    this.runScore = net.connect(serverInfo, attemptConnection);
 
     this.runScore.on('error', (error) => {
       this.store.dispatch(addMessage(`Unable to connect to RSServer: ${error.message}`));
@@ -62,10 +72,19 @@ export default class RfidRelay {
     conn.setEncoding('utf8');
 
     conn.on('data', (rawReaderData) => {
-      const { running, startTime } = this.store.getState().timer;
-      if (!running) return;
+      const { readerMap, timer: { running, startTime } } = this.store.getState();
+      if (!running || Object.keys(readerMap).length < 0) return;
 
+      // Obtain the route mapped to the reader's address
+      // ex: conn.remoteAddress => '::ffff:192.168.1.100'
+      //      => '192.168.1.100'
+      const readerAddress = conn.remoteAddress.split(':').pop();
+      if (readerMap[readerAddress] === undefined) {
+        this.store.dispatch(addMessage(`Unmapped address: ${readerAddress}`));
+        return;
+      }
       const readerDataArray = rawReaderData.split(',');
+      readerDataArray[2] = readerMap[readerAddress];
       // Remove any leading zeros on the bib
       // ex: data => 0542,20:09:07.394,Finish
       //          => ['0542','20:09:07.394','Finish']
