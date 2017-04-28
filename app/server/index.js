@@ -59,13 +59,12 @@ export default class RfidRelay {
       host: runScoreAddress,
       port: runScorePort
     };
-    let currentAttempts = 0;
 
     this.runScore = new net.Socket();
-    this.runScore.setTimeout(1000);
 
     this.attemptRSServerConnection(serverInfo);
 
+    let currentAttempts = 0;
     this.runScore.on('error', () => {
       currentAttempts += 1;
       log.error('Failed to connect to RSServer.');
@@ -74,7 +73,7 @@ export default class RfidRelay {
         log.error(`Cannot connect to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
         log.error('Please review server setup.');
       } else {
-        this.attemptRSServerConnection(serverInfo);
+        setTimeout(() => (this.attemptRSServerConnection(serverInfo)), 5000);
       }
     });
 
