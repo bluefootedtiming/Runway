@@ -11,7 +11,7 @@ type actionType = {
 };
 
 const initialState = {
-  messages: ['Started']
+  messages: []
 };
 
 export default function status(state: statusStateType = initialState, action: actionType) {
