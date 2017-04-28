@@ -3,7 +3,7 @@ import Status from '../components/Status';
 
 function mapStateToProps(state) {
   return {
-    messages: state.messages
+    messages: state.status.messages
   };
 }
 
