@@ -77,6 +77,7 @@ export default class RfidRelay {
 
       // Obtain the route mapped to the reader's address
       // ex: conn.remoteAddress => '::ffff:192.168.1.100'
+      //      => ['','','ffff','','192.168.1.100']
       //      => '192.168.1.100'
       const readerAddress = conn.remoteAddress.split(':').pop();
       if (readerMap[readerAddress] === undefined) {
