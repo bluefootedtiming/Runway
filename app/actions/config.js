@@ -33,9 +33,9 @@ export function addReader(reader: readerType) {
   };
 }
 
-export function delReader(index: number) {
+export function delReader(address: string) {
   return {
     type: DEL_READER,
-    payload: index
+    payload: address
   };
 }

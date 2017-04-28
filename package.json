@@ -188,7 +188,6 @@
     "extract-text-webpack-plugin": "^2.1.0",
     "font-awesome": "^4.7.0",
     "history": "^4.6.1",
-    "immutability-helper": "^2.1.2",
     "moment": "^2.18.1",
     "react": "^15.5.4",
     "react-debounce-input": "^3.0.0",

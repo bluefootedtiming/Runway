@@ -1,5 +1,3 @@
-import update from 'immutability-helper';
-
 import {
   SET_RUNSCORE_ADDRESS,
   SET_RUNSCORE_PORT,
@@ -20,7 +18,7 @@ const initialState = {
   runScoreAddress: '192.168.1.4',
   runScorePort: 3988,
   listenPort: 3988,
-  readerMap: []
+  readerMap: {}
 };
 
 export default function config(state: configStateType = initialState, action) {
@@ -43,16 +41,17 @@ export default function config(state: configStateType = initialState, action) {
         listenPort: action.payload
       };
 
-    case ADD_READER:
-      return update(state, {
-        readerMap: { $push: action.payload }
-      });
+    case ADD_READER: {
+      const { name, address } = action.payload;
+      const newState = Object.assign({}, state);
+      newState.reader[address] = name;
+      return newState;
+    }
 
     case DEL_READER: {
-      const index = action.payload;
-      return update(state, {
-        readerMap: { $splice: [index, 1] }
-      });
+      const newState = Object.assign({}, state);
+      delete newState.readerMap[action.payload];
+      return newState;
     }
 
     default:
