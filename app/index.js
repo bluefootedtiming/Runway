@@ -10,7 +10,7 @@ import RfidRelay from './server';
 
 const store = configureStore();
 
-const relay = new RfidRelay(store);
+export const relay = new RfidRelay(store); // eslint-disable-line
 relay.start();
 
 render(
