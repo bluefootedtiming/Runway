@@ -18,7 +18,6 @@ export default class RfidRelay {
   }
 
   stop() {
-    this.store.dispatch(addMessage('Stopping...'));
     this.rfidListener.close();
     this.runScoreConn.destroy();
   }
@@ -30,11 +29,15 @@ export default class RfidRelay {
     this.rfidListener.on('connection', this.handleConnection);
 
     this.rfidListener.on('error', (error) => {
-      this.store.dispatch(addMessage(error.message));
+      this.store.dispatch(addMessage(error.message), 1);
+    });
+
+    this.rfidListener.on('close', () => {
+      this.store.dispatch(addMessage('RFID listener stopped.'));
     });
 
     this.rfidListener.listen(listenPort, () => {
-      this.store.dispatch(addMessage('RFID listener started'));
+      this.store.dispatch(addMessage('RFID listener started!'));
     });
   }
 
@@ -49,7 +52,7 @@ export default class RfidRelay {
     this.attemptRSServerConnection(serverInfo, RSSERVER_CONNECTION_ATTEMPTS);
 
     this.runScore.on('close', () => {
-      this.store.dispatch(addMessage('Disconnected from RSServer'));
+      this.store.dispatch(addMessage('Disconnected from RSServer.'));
       this.runScoreConn = null;
     });
   }
@@ -66,23 +69,20 @@ export default class RfidRelay {
    */
   attemptRSServerConnection = (serverInfo: { host: string, port: number }, attempts: number) => {
     if (attempts === 0) {
-      this.store.dispatch(addMessage(`
-        Please review server setup.
-      `));
+      this.store.dispatch(addMessage(`Cannot connect to RSServer on: ${serverInfo.host}:${serverInfo.port}`, 1));
+      this.store.dispatch(addMessage('Please review server setup.', 1));
       return;
     }
 
-    this.store.dispatch(addMessage('Attempting connection to RSServer...'));
+    this.store.dispatch(addMessage('Attempting to connect to RSServer...'));
     this.runScore = net.connect(serverInfo, (conn) => {
       this.store.dispatch(addMessage('Connected to RSServer!'));
       this.runScoreConn = conn;
     });
 
-    this.runScore.on('error', (error) => {
-      this.store.dispatch(addMessage(`
-        Failed to connect to RSServer: ${error.message}
-        (${attempts}) attempts left
-      `));
+    this.runScore.on('error', () => {
+      this.store.dispatch(addMessage('Failed to connect to RSServer.', 1));
+      this.store.dispatch(addMessage(`(${attempts}) reconnect attempts left.`, 1));
       this.attemptRSServerConnection(serverInfo, attempts - 1);
     });
   }
@@ -106,7 +106,7 @@ export default class RfidRelay {
       //      => '192.168.1.100'
       const readerAddress = conn.remoteAddress.split(':').pop();
       if (readerMap[readerAddress] === undefined) {
-        this.store.dispatch(addMessage(`Unmapped address: ${readerAddress}`));
+        this.store.dispatch(addMessage(`Unmapped address: ${readerAddress}`, 1));
         return;
       }
       const readerDataArray = rawReaderData.split(',');
