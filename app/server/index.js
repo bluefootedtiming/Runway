@@ -2,8 +2,7 @@ import net from 'net';
 import moment from 'moment';
 import { addMessage } from '../actions/status';
 
-const RSSERVER_CONNECTION_ATTEMPTS = 5;
-
+const MAX_ATTEMPTS = 5;
 export const log = {
   store: null,
   info(message: string) {
@@ -26,7 +25,7 @@ export default class RfidRelay {
 
   start() {
     this._startRfidListener(); // eslint-disable-line
-    this._connectToRunScore(); // eslint-disable-line
+    this._connectToRunScore(MAX_ATTEMPTS); // eslint-disable-line
   }
 
   stop() {
@@ -53,47 +52,40 @@ export default class RfidRelay {
     });
   }
 
-  _connectToRunScore() {
+  _connectToRunScore(maxAttempts: number = 5) {
     const { runScoreAddress, runScorePort } = this.store.getState().config;
-
     const serverInfo = {
       host: runScoreAddress,
       port: runScorePort
     };
+    let currentAttempts = 0;
 
     this.runScore = new net.Socket();
     this.runScore.setTimeout(1000);
+    this.attemptRSServerConnection(serverInfo);
 
-    this.attemptRSServerConnection(serverInfo, RSSERVER_CONNECTION_ATTEMPTS);
+    this.runScore.on('error', () => {
+      currentAttempts += 1;
+      log.error('Failed to connect to RSServer.');
+      log.error(`(${currentAttempts}) reconnect attempts left.`);
+      if (currentAttempts >= maxAttempts) {
+        log.error(`Cannot connect to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
+        log.error('Please review server setup.');
+      } else {
+        this.attemptRSServerConnection(serverInfo);
+      }
+    });
+
+    // this.runScore.on('close', () => {
+    //   if (currentAttempts === maxAttempts) console.log('done');
+    // });
   }
 
-  /**
-   * attemptRSServerConnection
-   *
-   * Recursive function to attempt connection to the RSServer.
-   * This function will only call recursively if it fails.
-   *
-   * @param {Server}          - Address and Port information
-   * @param {Number} attempts - Number of attempts left to retry connection
-   * @memberOf RfidRelay
-   */
-  attemptRSServerConnection = (serverInfo: { host: string, port: number }, attempts: number) => {
-    if (attempts <= 0) {
-      log.error(`Cannot connect to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
-      log.error('Please review server setup.');
-      return;
-    }
-
+  attemptRSServerConnection = (serverInfo: { host: string, port: number }) => {
     log.info('Attempting to connect to RSServer...');
     this.runScore.connect(serverInfo, (conn) => {
       log.info('Connected to RSServer!');
       this.runScoreConn = conn;
-    });
-
-    this.runScore.on('error', () => {
-      log.error('Failed to connect to RSServer.');
-      log.error(`(${attempts}) reconnect attempts left.`);
-      this.attemptRSServerConnection(serverInfo, attempts - 1);
     });
   }
 
