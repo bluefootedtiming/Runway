@@ -17,7 +17,11 @@ const initialState = {
   runScoreAddress: '192.168.1.4',
   runScorePort: 3988,
   listenPort: 3988,
-  readerMap: {}
+  readerMap: {
+    '192.168.1.100': 'START',
+    '192.168.1.102': 'FINSH'
+
+  }
 };
 
 export default function config(state: configStateType = initialState, action) {
