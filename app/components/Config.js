@@ -1,29 +1,73 @@
 import React, { Component } from 'react';
+import { readerMapType } from '../reducers/config';
 
 class Configuration extends Component {
+  props: {
+    setRunScoreAddress: () => void,
+    setRunScorePort: () => void,
+    setListenPort: () => void,
+    runScoreAddress: string,
+    runScorePort: number,
+    listenPort: number,
+    readerMap: readerMapType
+  }
+
+  // XXX: Replace with onSave
+  handleChange = e => {
+    const { name, value } = e.currentTarget.name;
+    switch (name) {
+      case 'runScoreAddress':
+        return this.props.setRunScoreAddress(value);
+
+      case 'runScorePort':
+        return this.props.setRunScorePort(value);
+
+      case 'listenPort':
+        return this.props.setListenPort(value);
+
+      default:
+    }
+  }
+
+  addReader = () => {
+
+  }
+
   render() {
+    const { runScoreAddress, runScorePort, listenPort, readerMap } = this.props;
+
     return (
-      <div>
+      <section>
         <h1>Configuration</h1>
+
         <h2>RunScore</h2>
-        <h2>RFID Listener Port</h2>
+        <input placeholder="Address" name="runScoreAddress" defaultValue={runScoreAddress} ref={c => (this.runScoreAddress = c)} />
+        <input placeholder="Port" name="runScorePort" defaultValue={runScorePort} ref={c => (this.runScorePort = c)} />
+
+        <h2>RFID Listen Port</h2>
         <aside>
           RFID Readers should use the IP address of this
            computer and the port listed below in as <b>TagStreamAddress</b>
         </aside>
-        <h2>RFID Locations</h2>
+        <input placeholder="Listen Port" name="listenPort" defaultValue={listenPort} ref={c => (this.listenPort = c)} />
+
+        <h2>RFID Locations <i className="fa fa-plus-circle" onClick={this.addReader} role="button" /></h2>
         <aside>
           Configure Readers to use TagStreamFormat <b>%i,%N,%T</b>.
            The section below is only needed if you would rather not set
            <b>ReaderName</b> on your readers to match RunScore events.
         </aside>
-      </div>
+        {Object.keys(readerMap).map(address => (
+          <div key={`reader-${address}`}>
+            <input placeholder="IP Address" defaultValue={address} ref={c => (this[`address-${address}`] = c)} />
+            <input placeholder="Location/Event" defaultValue={readerMap[address]} ref={c => (this[`name-${address}`] = c)} />
+            <i className="fa fa-minus-circle" />
+          </div>
+        ))}
+        <button onClick={this.onSave}>Save Settings</button>
+      </section>
     );
   }
 }
-
-// Configuration.propTypes = {
-
-// }
 
 export default Configuration;

@@ -23,9 +23,9 @@
     font-size: 2rem;
     margin: 1rem auto;
     width: 60%;
-
-    &.running {
-      background-color: #f00;
-    }
   }
+}
+
+button.running {
+  background-color: #f00;
 }

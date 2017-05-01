@@ -37,17 +37,19 @@ export default class Tools extends Component {
 
     return (
       <div className={styles.container} >
-        <button name="status" onClick={this.toggleTool}>
-          <i className="fa fa-align-justify" />
-        </button>
-        <button name="config" onClick={this.toggleTool}>
-          <i className="fa fa-wrench" />
-        </button>
+        <div className={styles.buttons}>
+          <button name="status" onClick={this.toggleTool}>
+            <i className="fa fa-align-justify" />
+          </button>
+          <button name="config" onClick={this.toggleTool}>
+            <i className="fa fa-wrench" />
+          </button>
+        </div>
 
         { currentTool && (
           <div className="tool">
-            { currentTool === 'status' && <Status messages={[]} />}
-            { currentTool === 'config' && <Config config={[]} />}
+            { currentTool === 'status' && <Status />}
+            { currentTool === 'config' && <Config />}
           </div>
         )}
       </div>

@@ -6,11 +6,13 @@ import {
   DEL_READER
 } from '../actions/config';
 
+export type readerMapType = { [string]: string };
+
 export type configStateType = {
   runScoreAddress: string,
   runScorePort: number,
   listenPort: number,
-  readerMap: { [string]: string }
+  readerMap: readerMapType
 };
 
 const initialState = {

@@ -1,5 +1,5 @@
 .container {
-  text-align: right;
+  color: #000;
   width: 100%;
 
   button {
@@ -8,4 +8,46 @@
     color: #fff;
     margin-left: 0.25rem;
   }
+
+  section {
+    background-color: #fff;
+    font-size: 0.75rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+
+    h1,
+    h2 {
+      color: #000;
+      margin: 0.5rem 0;
+    }
+
+    h1 {
+      font-size: 1rem;
+    }
+
+    h2 {
+      font-size: 0.8rem;
+
+      i {
+        color: green;
+      }
+    }
+
+    i {
+      color: red;
+    }
+
+    aside {
+      display: none;
+    }
+
+    button {
+      background-color: green;
+      margin: 0.75rem 0;
+    }
+  }
+}
+
+.buttons {
+  text-align: right;
 }

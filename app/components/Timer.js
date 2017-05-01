@@ -96,7 +96,7 @@ class Timer extends Component {
           <Input name="seconds" value={format(seconds)} {...inputProps} />
         </div>
 
-        <button onClick={this.toggleTimer} className={!running && 'running'}>
+        <button onClick={this.toggleTimer} className={running && styles.running}>
           {running ? 'Stop' : 'Start'}
         </button>
       </div>
