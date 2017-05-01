@@ -1,6 +1,6 @@
 import net from 'net';
 import moment from 'moment';
-import { addMessage } from '../actions/status';
+import { addMessage, setRSServerConnection } from '../actions/status';
 
 const MAX_ATTEMPTS = 5;
 export const log = {
@@ -17,7 +17,6 @@ export default class RfidRelay {
   store;
   rfidListener: net.Server;
   runScoreConn: net.Socket;
-  readerMap: {[string]: string};
   connected: boolean;
 
   constructor(store) {
@@ -69,7 +68,7 @@ export default class RfidRelay {
       this.runScore.connect(info, (conn) => {
         log.info('Connected to RSServer!');
         this.runScoreConn = conn;
-        this.connected = true;
+        this.store.dispatch(setRSServerConnection(true));
       });
     };
 
@@ -77,7 +76,7 @@ export default class RfidRelay {
 
     let currentAttempts = 0;
     this.runScore.on('error', () => {
-      this.connected = false;
+      this.store.dispatch(setRSServerConnection(false));
       currentAttempts += 1;
       log.error('Failed to connect to RSServer.');
       log.error(`(${MAX_ATTEMPTS - currentAttempts}) reconnect attempts left.`);
@@ -105,36 +104,21 @@ export default class RfidRelay {
 
     conn.on('data', (rawReaderData) => {
       const {
-        config: { readerMap: currentReaderMap },
+        config: { readerMap },
         timer: { running, startTime }
       } = this.store.getState();
-      const prevReaderMap = this.readerMap;
 
       if (!running) return;
 
-      if (!prevReaderMap
-        || Object.keys(prevReaderMap).length !== Object.keys(currentReaderMap).length) {
-        this.readerMap = currentReaderMap;
-        // Send the alert message on either the FIRST occurance or ON CHANGE
-        if (Object.keys(this.readerMap).length === 0) {
-          log.error('NO READERS MAPPED TO LOCATIONS.');
-          log.error('Use the config to map locations to readers.');
-        }
-      }
-
-      // Wait until readerMap is set
-      if (Object.keys(this.readerMap).length === 0) return;
+      const readerDataArray = rawReaderData.split(',');
       // Obtain the route mapped to the reader's address
       // ex: conn.remoteAddress => '::ffff:192.168.1.100'
       //      => ['','','ffff','','192.168.1.100']
       //      => '192.168.1.100'
       const readerAddress = conn.remoteAddress.split(':').pop();
-      if (this.readerMap[readerAddress] === undefined) {
-        log.error(`Unmapped address: ${readerAddress}`);
-        return;
+      if (readerMap[readerAddress]) {
+        readerDataArray[2] = this.readerMap[readerAddress];
       }
-      const readerDataArray = rawReaderData.split(',');
-      readerDataArray[2] = this.readerMap[readerAddress];
       // Remove any leading zeros on the bib
       // ex: data => 0542,20:09:07.394,Finish
       //          => ['0542','20:09:07.394','Finish']
