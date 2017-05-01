@@ -18,10 +18,12 @@ export default class RfidRelay {
   rfidListener: net.Server;
   runScoreConn: net.Socket;
   readerMap: {[string]: string};
+  connected: boolean;
 
   constructor(store) {
     this.store = store;
     log.store = this.store;
+    this.connected = false;
   }
 
   start() {
@@ -53,19 +55,29 @@ export default class RfidRelay {
     });
   }
 
-  connectToRSServer() {
-    const { runScoreAddress, runScorePort } = this.store.getState().config;
-    const serverInfo = {
-      host: runScoreAddress,
-      port: runScorePort
-    };
+  serverInfo = () => ({
+    host: this.store.getState().config.runScoreAddress,
+    port: this.store.getState().config.runScorePort
+  })
 
+  connectToRSServer() {
+    const serverInfo = this.serverInfo();
     this.runScore = new net.Socket();
 
-    this.attemptRSServerConnection(serverInfo);
+    const attemptRSServerConnection = (info: { host: string, port: number }) => {
+      log.info('Attempting to connect to RSServer...');
+      this.runScore.connect(info, (conn) => {
+        log.info('Connected to RSServer!');
+        this.runScoreConn = conn;
+        this.connected = true;
+      });
+    };
+
+    attemptRSServerConnection(serverInfo);
 
     let currentAttempts = 0;
     this.runScore.on('error', () => {
+      this.connected = false;
       currentAttempts += 1;
       log.error('Failed to connect to RSServer.');
       log.error(`(${MAX_ATTEMPTS - currentAttempts}) reconnect attempts left.`);
@@ -73,21 +85,13 @@ export default class RfidRelay {
         log.error(`Cannot connect to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
         log.error('Please review server setup.');
       } else {
-        setTimeout(() => (this.attemptRSServerConnection(serverInfo)), 5000);
+        setTimeout(() => (attemptRSServerConnection(serverInfo)), 5000);
       }
     });
 
     // this.runScore.on('close', () => {
     //   if (currentAttempts === maxAttempts) console.log('done');
     // });
-  }
-
-  attemptRSServerConnection = (serverInfo: { host: string, port: number }) => {
-    log.info('Attempting to connect to RSServer...');
-    this.runScore.connect(serverInfo, (conn) => {
-      log.info('Connected to RSServer!');
-      this.runScoreConn = conn;
-    });
   }
 
   // TODO: There needs Alien timestamps need to be appended
