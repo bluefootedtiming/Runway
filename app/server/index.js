@@ -101,41 +101,49 @@ export default class RfidRelay {
     if (!runScore) return;
 
     conn.setEncoding('utf8');
-
     conn.on('data', (rawReaderData) => {
-      const {
-        config: { readerMap },
-        timer: { running, startTime }
-      } = this.store.getState();
+      const { timer: { running } } = this.store.getState();
 
       if (!running) return;
 
-      const readerDataArray = rawReaderData.split(',');
-      // Obtain the route mapped to the reader's address
-      // ex: conn.remoteAddress => '::ffff:192.168.1.100'
-      //      => ['','','ffff','','192.168.1.100']
-      //      => '192.168.1.100'
-      const readerAddress = conn.remoteAddress.split(':').pop();
-      if (readerMap[readerAddress]) {
-        readerDataArray[2] = this.readerMap[readerAddress];
+      const readerDataArray = rawReaderData.split(/[,\0\r\n]/).filter(str => str !== '');
+      for (let i = 0; i < readerDataArray.length; i += 3) {
+        const subArray = readerDataArray.slice(i, i + 3);
+        const formattedData = this.getFormattedReaderData(subArray, conn);
+        runScore.write(formattedData);
+        // Debugging
+        // console.log(subArray);
+        // console.log(formattedData);
       }
-      // Remove any leading zeros on the bib
-      // ex: data => 0542,20:09:07.394,Finish
-      //          => ['0542','20:09:07.394','Finish']
-      //     bib = data[0]
-      readerDataArray[0] = parseInt(readerDataArray[0], 10);
-      // Replace alien's time with elasped time
-      // Difference between current & start
-      const elapsed = moment.duration(moment.now() - startTime);
-      readerDataArray[1] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
-      // Add RSBI to the front of the string
-      // so RSServer knows how to format
-      readerDataArray.unshift('RSBI');
-      const formattedData = `${readerDataArray.join(',')}\r`;
-      console.log(formattedData);
-      runScore.write(formattedData);
     });
-  };
+  }
+
+  getFormattedReaderData = (readerDataArray, conn) => {
+    const { config: { readerMap }, timer: { startTime } } = this.store.getState();
+    const newData = readerDataArray;
+    // Obtain the route mapped to the reader's address
+    // ex: conn.remoteAddress => '::ffff:192.168.1.100'
+    //      => ['','','ffff','','192.168.1.100']
+    //      => '192.168.1.100'
+    const readerAddress = conn.remoteAddress.split(':').pop();
+    if (readerMap[readerAddress]) {
+      newData[2] = readerMap[readerAddress];
+    }
+
+    // Remove any leading zeros on the bib
+    // ex: data => 0542,20:09:07.394,Finish
+    //          => ['0542','20:09:07.394','Finish']
+    //     bib = data[0]
+    newData[0] = parseInt(readerDataArray[0], 10);
+    // Replace alien's time with elasped time
+    // Difference between current & start
+    const elapsed = moment.duration(moment.now() - startTime);
+    newData[1] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
+    // Add RSBI to the front of the string
+    // so RSServer knows how to format
+    newData.unshift('RSBI');
+    return `${readerDataArray.join(',')}\r`;
+  }
 }
 
 
