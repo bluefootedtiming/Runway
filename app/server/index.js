@@ -25,8 +25,8 @@ export default class RfidRelay {
   }
 
   start() {
-    this._startRfidListener(); // eslint-disable-line
-    this._connectToRunScore(); // eslint-disable-line
+    this.startRfidListener();
+    this.connectToRSServer();
   }
 
   stop() {
@@ -34,7 +34,7 @@ export default class RfidRelay {
     this.runScoreConn.destroy();
   }
 
-  _startRfidListener() {
+  startRfidListener() {
     const { listenPort } = this.store.getState().config;
 
     this.rfidListener = net.createServer();
@@ -53,7 +53,7 @@ export default class RfidRelay {
     });
   }
 
-  _connectToRunScore() {
+  connectToRSServer() {
     const { runScoreAddress, runScorePort } = this.store.getState().config;
     const serverInfo = {
       host: runScoreAddress,
