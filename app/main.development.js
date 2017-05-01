@@ -51,6 +51,7 @@ app.on('ready', async () => {
     height: 200,
     resizable: false
   });
+  mainWindow.setMenu(null);
 
   const url = (process.env.NODE_ENV === 'development')
     ? `http://localhost:${process.env.PORT || 1212}/dist/app.html`
