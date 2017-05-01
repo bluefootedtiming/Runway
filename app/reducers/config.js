@@ -20,8 +20,8 @@ const initialState = {
   runScorePort: 3988,
   listenPort: 3988,
   readerMap: {
-    '192.168.1.100': 'START',
-    '192.168.1.102': 'FINISH'
+    // '192.168.1.100': 'START',
+    // '192.168.1.102': 'FINISH'
 
   }
 };
