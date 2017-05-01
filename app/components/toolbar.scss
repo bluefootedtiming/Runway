@@ -1,4 +1,28 @@
-.container {
+.toolbar_button_container {
+  display: flex;
+  justify-content: flex-end;
+
+  button {
+    background: none;
+    border: 1px solid #fff;
+    color: #fff;
+    margin-left: 0.25rem;
+  }
+}
+
+.left_buttons {
+  margin-right: auto;
+}
+
+.connected {
+  background: green !important;
+}
+
+.disconnected {
+  background: red !important;
+}
+
+.toolbar_panel_container {
   color: #000;
   width: 100%;
 
@@ -46,8 +70,4 @@
       margin: 0.75rem 0;
     }
   }
-}
-
-.buttons {
-  text-align: right;
 }
