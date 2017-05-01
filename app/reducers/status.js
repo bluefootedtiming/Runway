@@ -1,5 +1,5 @@
 // @flow
-import { ADD_MESSAGE } from '../actions/status';
+import * as Actions from '../actions/status';
 
 export type statusStateType = {
   messages: Array<string>
@@ -16,10 +16,20 @@ const initialState = {
 
 export default function status(state: statusStateType = initialState, action: actionType) {
   switch (action.type) {
-    case ADD_MESSAGE:
+    case Actions.ADD_MESSAGE:
       return {
         messages: state.messages.concat(action.payload)
       };
+    case Actions.RSSERVER_CONNECTED:
+      return {
+        ...state,
+        runScoreServerConnected: action.payload
+      };
+    case Actions.RSSERVER_NOT_CONNECTED: {
+      const newState = Object.assign({}, state);
+      delete newState.runScoreServerConnected;
+      return newState;
+    }
     default:
       return state;
   }
