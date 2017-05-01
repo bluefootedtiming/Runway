@@ -10,16 +10,22 @@ const { BrowserWindow } = require('electron').remote;
 // import * as ConfigureActions from '../actions/configure';
 
 export default class Tools extends Component {
+  props: {
+    runScoreServerConnected?: boolean
+  }
+
   state: {
-    currentTool?: string,
-      isConnectedToRSServer: boolean
-  };
+    currentTool?: string
+  }
+
+  static defaultProps = {
+    runScoreServerConnected: false
+  }
 
   constructor() {
     super();
     this.state = {
-      currentTool: null,
-      isConnectedToRSServer: false
+      currentTool: null
     };
   }
 
@@ -36,14 +42,14 @@ export default class Tools extends Component {
   }
 
   retryServerConnection = () => {
-    if (!relay.isConnectedToRSServer) {
+    if (!this.props.runScoreServerConnected) {
       relay.connectToRSServer();
     }
-    this.setState({ isConnectedToRSServer: relay.connected });
   }
 
   render() {
-    const { currentTool, isConnectedToRSServer } = this.state;
+    const { runScoreServerConnected } = this.props;
+    const { currentTool } = this.state;
 
     return (
       <div>
@@ -51,9 +57,9 @@ export default class Tools extends Component {
           <div className={styles.left_buttons}>
             <button
               name="server"
-              className={isConnectedToRSServer ? styles.connected : styles.disconnected}
-              title={`${isConnectedToRSServer ? 'Connected' : 'Not connected'} to RunScore Server`}
-              onClick={!isConnectedToRSServer && this.retryServerConnection}
+              className={runScoreServerConnected ? styles.connected : styles.disconnected}
+              title={`${runScoreServerConnected ? 'Connected' : 'Not connected'} to RunScore Server`}
+              onClick={this.retryServerConnection}
             >
               <i className="fa fa-flash" />
             </button>
