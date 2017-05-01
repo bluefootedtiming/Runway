@@ -21,7 +21,7 @@ const initialState = {
   listenPort: 3988,
   readerMap: {
     '192.168.1.100': 'START',
-    '192.168.1.102': 'FINSH'
+    '192.168.1.102': 'FINISH'
 
   }
 };
