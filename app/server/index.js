@@ -1,8 +1,12 @@
 import net from 'net';
 import moment from 'moment';
+import path from 'path';
+import jetpack from 'fs-jetpack';
 import { addMessage, setRSServerConnection } from '../actions/status';
 
+const DATA_DIRNAME = 'AlienRunwayData';
 const MAX_ATTEMPTS = 5;
+
 export const log = {
   store: null,
   info(message: string) {
@@ -17,7 +21,6 @@ export default class RfidRelay {
   store;
   rfidListener: net.Server;
   runScoreConn: net.Socket;
-  connected: boolean;
 
   constructor(store) {
     this.store = store;
@@ -59,6 +62,20 @@ export default class RfidRelay {
     port: this.store.getState().config.runScorePort
   })
 
+/**
+  * connectToRSServer
+  *
+  * Connects to the RunScoreServer using the server info. It will attempt
+  * connection at a maximum of MAX_ATTEMPTS before quitting. Connection can
+  * be manually started via the connect button.
+  *
+  * TODO: There needs to be a way to kill previous connection attempts before
+  *       trying any new connecitons. Currently, pressing that button starts
+  *       up as many attempts as desired, which can cause the server to crash(?)
+  *       and spam the logs.
+  *
+  * @memberOf RfidRelay
+  */
   connectToRSServer() {
     const serverInfo = this.serverInfo();
     this.runScore = new net.Socket();
@@ -88,32 +105,44 @@ export default class RfidRelay {
       }
     });
 
-    // this.runScore.on('close', () => {
-    //   if (currentAttempts === maxAttempts) console.log('done');
-    // });
+    this.runScore.on('end', () => {
+      log.info('Ending RSServer connection.');
+      this.store.dispatch(setRSServerConnection(false));
+    });
   }
 
-  // TODO: There needs Alien timestamps need to be appended
-  //    to the end of the formatted string sent to RSServer
-  //    when we save the string to the csv log files.
+  /**
+    * handleConnection
+    *
+    * Handles Rfid writes to the RfidListener. The handler writes to both the csv
+    * file (/<dirname>/<timestamp>/<event>.csv) and--optionally--to RunScore Server.
+    * It's optional to write to the RunScoreServer due to the possibility of it
+    * crashing/losing connection.
+    *
+    * @param {object} - Connection information about the Rfid connected
+    *
+    * @memberOf RfidRelay
+    */
   handleConnection = (conn) => {
+    console.log(typeof conn);
     const runScore = this.runScore;
-    if (!runScore) return;
 
     conn.setEncoding('utf8');
     conn.on('data', (rawReaderData) => {
-      const { timer: { running } } = this.store.getState();
-
+      const { startTime, running } = this.store.getState().timer;
       if (!running) return;
 
       const readerDataArray = rawReaderData.split(/[,\0\r\n]/).filter(str => str !== '');
       for (let i = 0; i < readerDataArray.length; i += 3) {
         const subArray = readerDataArray.slice(i, i + 3);
-        const formattedData = this.getFormattedReaderData(subArray, conn);
-        runScore.write(formattedData);
-        // Debugging
-        // console.log(subArray);
-        // console.log(formattedData);
+        const formattedArray = this.getFormattedReaderData(subArray, conn);
+
+        if (runScore) runScore.write(`${formattedArray.join(',')}\r`);
+
+        jetpack.appendAsync(
+          path.join('../', DATA_DIRNAME, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
+          `${formattedArray.join(',')}\r`
+        );
       }
     });
   }
@@ -142,14 +171,14 @@ export default class RfidRelay {
     * 4. Add RSBI to the front of the string
     *    so RSServer knows how to format
     *
-    * @param {Array<string>}      - This is the data from the reader
-    *                                ex: [<bib#>, <time>, <event>]
-    *                                 => ['0452', '08:01:20.324', 'Start']
-    * @param {connectionListener} - The connectionListener from the Rfid server
-    * @return {Array<string>}     - When joined, this should be able to be
-    *                                imported by RunScore Server
-    *                                ex: ['RSBI', <bib#>, <time>, <event>]
-    *                                 => ['RSBI', '452', '00:01:20.002', 'Start']
+    * @param {Array<string>}  - This is the data from the reader
+    *                           ex: [<bib#>, <time>, <event>]
+    *                            => ['0452', '08:01:20.324', 'Start']
+    * @param {object}         - Connection information about the Rfid connected
+    * @return {Array<string>} - When joined, this should be able to be
+    *                           imported by RunScore Server
+    *                           ex: ['RSBI', <bib#>, <time>, <event>]
+    *                            => ['RSBI', '452', '00:01:20.002', 'Start']
     * @memberOf RfidRelay
     */
   getFormattedReaderData = (readerDataArray: Array<string>, conn: any) => {
@@ -163,7 +192,8 @@ export default class RfidRelay {
     }
     newData[1] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
     newData[0] = !isNaN(readerDataArray[0]) ? parseInt(readerDataArray[0], 10) : readerDataArray[0];
-    return newData.unshift('RSBI');
+    newData.unshift('RSBI');
+    return newData;
   }
 }
 
