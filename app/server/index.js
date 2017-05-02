@@ -4,8 +4,11 @@ import path from 'path';
 import jetpack from 'fs-jetpack';
 import { addMessage, setRSServerConnection } from '../actions/status';
 
-const DATA_DIRNAME = 'AlienRunwayData';
-const MAX_ATTEMPTS = 5;
+const { app } = require('electron').remote;
+
+const ABS_PATH = app.getPath('documents');
+const DIR_NAME = 'AlienRunwayData';
+const MAX_CONNECT_ATTEMPTS = 5;
 
 export const log = {
   store: null,
@@ -19,8 +22,8 @@ export const log = {
 
 export default class RfidRelay {
   store;
+  runScore: net.Socket;
   rfidListener: net.Server;
-  runScoreConn: net.Socket;
 
   constructor(store) {
     this.store = store;
@@ -35,7 +38,7 @@ export default class RfidRelay {
 
   stop() {
     this.rfidListener.close();
-    this.runScoreConn.destroy();
+    this.runScore.end();
   }
 
   startRfidListener() {
@@ -62,29 +65,28 @@ export default class RfidRelay {
     port: this.store.getState().config.runScorePort
   })
 
-/**
-  * connectToRSServer
-  *
-  * Connects to the RunScoreServer using the server info. It will attempt
-  * connection at a maximum of MAX_ATTEMPTS before quitting. Connection can
-  * be manually started via the connect button.
-  *
-  * TODO: There needs to be a way to kill previous connection attempts before
-  *       trying any new connecitons. Currently, pressing that button starts
-  *       up as many attempts as desired, which can cause the server to crash(?)
-  *       and spam the logs.
-  *
-  * @memberOf RfidRelay
-  */
+  /**
+    * connectToRSServer
+    *
+    * Connects to the RunScoreServer using the server info. It will attempt
+    * connection at a maximum of MAX_CONNECT_ATTEMPTS before quitting. Connection can
+    * be manually started via the connect button.
+    *
+    * TODO: There needs to be a way to kill previous connection attempts before
+    *       trying any new connecitons. Currently, pressing that button starts
+    *       up as many attempts as desired, which can cause the server to crash(?)
+    *       and spam the logs.
+    *
+    * @memberOf RfidRelay
+    */
   connectToRSServer() {
     const serverInfo = this.serverInfo();
     this.runScore = new net.Socket();
 
     const attemptRSServerConnection = (info: { host: string, port: number }) => {
       log.info('Attempting to connect to RSServer...');
-      this.runScore.connect(info, (conn) => {
+      this.runScore.connect(info, () => {
         log.info('Connected to RSServer!');
-        this.runScoreConn = conn;
         this.store.dispatch(setRSServerConnection(true));
       });
     };
@@ -96,8 +98,8 @@ export default class RfidRelay {
       this.store.dispatch(setRSServerConnection(false));
       currentAttempts += 1;
       log.error('Failed to connect to RSServer.');
-      log.error(`(${MAX_ATTEMPTS - currentAttempts}) reconnect attempts left.`);
-      if (MAX_ATTEMPTS <= currentAttempts) {
+      log.error(`(${MAX_CONNECT_ATTEMPTS - currentAttempts}) reconnect attempts left.`);
+      if (MAX_CONNECT_ATTEMPTS <= currentAttempts) {
         log.error(`Cannot connect to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
         log.error('Please review server setup.');
       } else {
@@ -124,7 +126,6 @@ export default class RfidRelay {
     * @memberOf RfidRelay
     */
   handleConnection = (conn) => {
-    console.log(typeof conn);
     const runScore = this.runScore;
 
     conn.setEncoding('utf8');
@@ -132,15 +133,18 @@ export default class RfidRelay {
       const { startTime, running } = this.store.getState().timer;
       if (!running) return;
 
-      const readerDataArray = rawReaderData.split(/[,\0\r\n]/).filter(str => str !== '');
-      for (let i = 0; i < readerDataArray.length; i += 3) {
-        const subArray = readerDataArray.slice(i, i + 3);
-        const formattedArray = this.getFormattedReaderData(subArray, conn);
+      const readerDataArray = rawReaderData
+        .split(/[,\0\r\n]/)
+        .filter(str => str !== '');
 
+      for (let i = 0; i < readerDataArray.length; i += 3) {
+        const formattedArray = this.getFormattedReaderData(readerDataArray.slice(i, i + 3), conn);
         if (runScore) runScore.write(`${formattedArray.join(',')}\r`);
 
+        log.info(path.join(ABS_PATH, DIR_NAME, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`));
+
         jetpack.appendAsync(
-          path.join('../', DATA_DIRNAME, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
+          path.join(ABS_PATH, DIR_NAME, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
           `${formattedArray.join(',')}\r`
         );
       }
@@ -187,9 +191,7 @@ export default class RfidRelay {
     const elapsed = moment.duration(moment.now() - startTime);
     const newData = readerDataArray.slice();
 
-    if (readerMap[readerAddress]) {
-      newData[2] = readerMap[readerAddress];
-    }
+    if (readerMap[readerAddress]) newData[2] = readerMap[readerAddress];
     newData[1] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
     newData[0] = !isNaN(readerDataArray[0]) ? parseInt(readerDataArray[0], 10) : readerDataArray[0];
     newData.unshift('RSBI');
