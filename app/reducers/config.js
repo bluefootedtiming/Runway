@@ -22,7 +22,6 @@ const initialState = {
   readerMap: {
     // '192.168.1.100': 'START',
     // '192.168.1.102': 'FINISH'
-
   }
 };
 
@@ -49,7 +48,7 @@ export default function config(state: configStateType = initialState, action) {
     case ADD_READER: {
       const { name, address } = action.payload;
       const newState = Object.assign({}, state);
-      newState.reader[address] = name;
+      newState.readerMap[address] = name;
       return newState;
     }
 
