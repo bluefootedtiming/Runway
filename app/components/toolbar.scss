@@ -25,6 +25,8 @@
 .toolbar_panel_container {
   color: #000;
   width: 100%;
+  height: 275px;
+  overflow-y: scroll;
 
   button {
     background: none;
