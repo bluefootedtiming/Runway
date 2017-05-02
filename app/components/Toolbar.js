@@ -35,8 +35,8 @@ export default class Tools extends Component {
     const currentTool = tool === previousTool ? null : tool;
 
     const win = BrowserWindow.fromId(1);
-    const width = currentTool ? 500 : 200;
-    win.setSize(400, width, true);
+    const height = currentTool ? 500 : 200;
+    win.setSize(400, height, true);
 
     this.setState({ currentTool });
   }
