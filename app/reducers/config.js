@@ -1,4 +1,5 @@
 import {
+  LOAD_CONFIGURATIONS,
   SET_RUNSCORE_ADDRESS,
   SET_RUNSCORE_PORT,
   SET_LISTEN_PORT,
@@ -27,6 +28,11 @@ const initialState = {
 
 export default function config(state: configStateType = initialState, action) {
   switch (action.type) {
+    case LOAD_CONFIGURATIONS:
+      return {
+        ...state,
+        ...action.payload
+      };
     case SET_RUNSCORE_ADDRESS:
       return {
         ...state,

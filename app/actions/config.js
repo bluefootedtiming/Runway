@@ -1,9 +1,23 @@
+export const LOAD_CONFIGURATIONS = 'LOAD_CONFIGURATIONS';
 export const SET_RUNSCORE_ADDRESS = 'SET_RUNSCORE_ADDRESS';
 export const SET_RUNSCORE_PORT = 'SET_RUNSCORE_PORT';
 export const SET_LISTEN_PORT = 'SET_LISTEN_PORT';
 export const ADD_READER = 'ADD_READER';
 export const DEL_READER = 'DEL_READER';
 export type readerType = { name: string, address: string };
+export type configurationsType = {
+  runScoreAddress?: string,
+  runScorePort?: number,
+  listenPort?: number,
+  readerMap?: { [string]: string }
+};
+
+export function loadConfigurations(config: configurationsType) {
+  return {
+    type: LOAD_CONFIGURATIONS,
+    payload: config
+  };
+}
 
 export function setRunScoreAddress(address: string) {
   return {
