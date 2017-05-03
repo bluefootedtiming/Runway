@@ -49,7 +49,8 @@ app.on('ready', async () => {
     show: false,
     width: 400,
     height: 200,
-    resizable: false
+    resizable: false,
+    autoHideMenuBar: true
   });
   mainWindow.setMenu(null);
 
