@@ -137,21 +137,16 @@ export default class RfidRelay {
         .split(/[,\0\r\n]/)
         .filter(str => str !== '');
 
-      for (let i = 0; i < readerDataArray.length; i += 3) {
-        const formattedArray = this.getFormattedReaderData(readerDataArray.slice(i, i + 3), conn);
-        if (runScore) runScore.write(`${formattedArray.join(',')}\r`);
+      for (let i = 0; i < readerDataArray.length; i += 4) {
+        const subArray = readerDataArray.slice(i, i + 4);
+        if (subArray[0] !== 'RSBI') return;
 
-        // Debug message
-        // log.info(path.join(
-        //   ABS_PATH,
-        //   DIR_NAME,
-        //   moment(startTime).format('YYYYMMDDhhmmss'),
-        //   `${formattedArray[3]}.csv`
-        // ));
+        const formattedArray = this.getFormattedReaderData(subArray, conn);
+        if (runScore) runScore.write(`${formattedArray.join(',')}\r`);
 
         jetpack.appendAsync(
           path.join(LOGS_PATH, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
-          `${formattedArray.join(',')}\r`
+          `${formattedArray.concat(subArray[2]).join(',')}\r`
         );
       }
     });
@@ -172,8 +167,8 @@ export default class RfidRelay {
     *         => '192.168.1.100'
     *
     * 2. Remove any leading zeros on the bib
-    *    ex: data => 0542,20:09:07.394,Finish
-    *             => ['0542','20:09:07.394','Finish']
+    *    ex: data => RSBI,0542,20:09:07.394,Finish
+    *             => ['RSBI','0542','20:09:07.394','Finish']
     *        bib = data[0]
     *
     * 3. Replace alien's time (time of day) with elasped time (currentTime - startTime)
@@ -182,8 +177,8 @@ export default class RfidRelay {
     *    so RSServer knows how to format
     *
     * @param {Array<string>}  - This is the data from the reader
-    *                           ex: [<bib#>, <time>, <event>]
-    *                            => ['0452', '08:01:20.324', 'Start']
+    *                           ex: [RSBI, <bib#>, <time>, <event>]
+    *                            => ['RSBI', '0452', '08:01:20.324', 'Start']
     * @param {object}         - Connection information about the Rfid connected
     * @return {Array<string>} - When joined, this should be able to be
     *                           imported by RunScore Server
@@ -197,10 +192,9 @@ export default class RfidRelay {
     const elapsed = moment.duration(moment.now() - startTime);
     const newData = readerDataArray.slice();
 
-    if (readerMap[readerAddress]) newData[2] = readerMap[readerAddress];
-    newData[1] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
-    newData[0] = !isNaN(readerDataArray[0]) ? parseInt(readerDataArray[0], 10) : readerDataArray[0];
-    newData.unshift('RSBI');
+    if (readerMap[readerAddress]) newData[3] = readerMap[readerAddress];
+    newData[2] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
+    newData[1] = !isNaN(readerDataArray[1]) ? parseInt(readerDataArray[1], 10) : readerDataArray[1];
     return newData;
   }
 }
