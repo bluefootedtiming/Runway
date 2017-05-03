@@ -141,7 +141,13 @@ export default class RfidRelay {
         const formattedArray = this.getFormattedReaderData(readerDataArray.slice(i, i + 3), conn);
         if (runScore) runScore.write(`${formattedArray.join(',')}\r`);
 
-        log.info(path.join(ABS_PATH, DIR_NAME, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`));
+        // Debug message
+        // log.info(path.join(
+        //   ABS_PATH,
+        //   DIR_NAME,
+        //   moment(startTime).format('YYYYMMDDhhmmss'),
+        //   `${formattedArray[3]}.csv`
+        // ));
 
         jetpack.appendAsync(
           path.join(ABS_PATH, DIR_NAME, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
