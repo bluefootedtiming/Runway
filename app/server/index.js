@@ -2,13 +2,9 @@ import net from 'net';
 import moment from 'moment';
 import path from 'path';
 import jetpack from 'fs-jetpack';
+
 import { addMessage, setRSServerConnection } from '../actions/status';
-
-const { app } = require('electron').remote;
-
-const ABS_PATH = app.getPath('documents');
-const DIR_NAME = 'AlienRunwayData';
-const MAX_CONNECT_ATTEMPTS = 5;
+import { LOGS_PATH, MAX_CONNECT_ATTEMPTS } from '../constants';
 
 export const log = {
   store: null,
@@ -121,6 +117,10 @@ export default class RfidRelay {
     * It's optional to write to the RunScoreServer due to the possibility of it
     * crashing/losing connection.
     *
+    * When writing to the csv, the reader's timestamp is appended to the end of the row.
+    * This is a backup time that may or may not be useful due to readers often having
+    * incorrect timing.
+    *
     * @param {object} - Connection information about the Rfid connected
     *
     * @memberOf RfidRelay
@@ -150,7 +150,7 @@ export default class RfidRelay {
         // ));
 
         jetpack.appendAsync(
-          path.join(ABS_PATH, DIR_NAME, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
+          path.join(LOGS_PATH, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
           `${formattedArray.join(',')}\r`
         );
       }
