@@ -76,20 +76,21 @@ class Configuration extends Component {
     if (listenPort) { this.props.setListenPort(Number(listenPort)); }
 
     this.state.readerAddresses.forEach(key => {
-      if (!this[`address-${key}`] || !this[`name-${key}`]) {
-        this.props.addReader({
-          address: this['address-new'].value,
-          name: this['name-new'].value
-        });
-      } else if (this[`address-${key}`].value.address !== key
-        || this[`name-${key}`].value.name !== readerMap[key]) {
+      const {
+        [`address-${key.length > 0 ? key : 'new'}`]: { value: address },
+        [`name-${key.length > 0 ? key : 'new'}`]: { value: name }
+      } = this;
+
+      if (!name || !address) return;
+
+      if (readerMap[key] === undefined) {
+        this.props.addReader({ name, address });
+      } else if (address !== key || name !== readerMap[key]) {
         this.props.delReader(key);
-        this.props.addReader({
-          address: this[`address-${key}`].value,
-          name: this[`name-${key}`].value
-        });
+        this.props.addReader({ name, address });
       }
     });
+
     this.setState({ readerAddresses: Object.keys(readerMap) });
   }
 
