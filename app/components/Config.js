@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import jetpack from 'fs-jetpack';
 import { readerMapType } from '../reducers/config';
+import { CONFIG_PATH } from '../constants';
 
 class Configuration extends Component {
   props: {
@@ -92,6 +94,16 @@ class Configuration extends Component {
     });
 
     this.setState({ readerAddresses: Object.keys(readerMap) });
+
+    jetpack.write(
+      CONFIG_PATH,
+      {
+        runScoreAddress,
+        runScorePort,
+        listenPort,
+        readerMap
+      }
+    );
   }
 
   readerMapInputFields = (address) => {
