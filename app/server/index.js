@@ -86,7 +86,7 @@ export default class RfidRelay {
     this.runScore = new net.Socket();
 
     const attemptRSServerConnection = (info: { host: string, port: number }) => {
-      log.info('Attempting to connect to RSServer...');
+      log.info(`Connecting to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
       this.runScore.connect(info, () => {
         log.info('Connected to RSServer!');
         this.store.dispatch(setRSServerConnection(true));

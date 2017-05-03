@@ -7,6 +7,7 @@ import styles from './Home.css';
 import TimerPanel from '../containers/TimerPanel';
 import Toolbar from '../containers/AppToolbar';
 
+import { relay } from '../index';
 import { CONFIG_PATH } from '../constants';
 
 export default class Home extends Component {
@@ -26,6 +27,8 @@ export default class Home extends Component {
     } else {
       jetpack.file(CONFIG_PATH, { content: {} });
     }
+
+    relay.start();
   }
 
   render() {
