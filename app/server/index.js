@@ -39,6 +39,7 @@ export default class RfidRelay {
 
   startRfidListener() {
     const { listenPort } = this.store.getState().config;
+    if (this.rfidListener) this.rfidListener.close();
 
     this.rfidListener = net.createServer();
     this.rfidListener.on('connection', this.handleConnection);
@@ -76,6 +77,11 @@ export default class RfidRelay {
     * @memberOf RfidRelay
     */
   connectToRSServer() {
+    if (this.runScore && this.runScore.connecting) {
+      log.info('Currently attempting connection.');
+      return;
+    }
+
     const serverInfo = this.serverInfo();
     this.runScore = new net.Socket();
 
@@ -94,7 +100,7 @@ export default class RfidRelay {
       this.store.dispatch(setRSServerConnection(false));
       currentAttempts += 1;
       log.error('Failed to connect to RSServer.');
-      log.error(`(${MAX_CONNECT_ATTEMPTS - currentAttempts}) reconnect attempts left.`);
+      log.error(`(${currentAttempts}) reconnect attempts.`);
       if (MAX_CONNECT_ATTEMPTS <= currentAttempts) {
         log.error(`Cannot connect to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
         log.error('Please review server setup.');
