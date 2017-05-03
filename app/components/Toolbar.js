@@ -47,6 +47,10 @@ export default class Tools extends Component {
     }
   }
 
+  restartRfidServer = () => {
+    relay.startRfidListener();
+  }
+
   render() {
     const { runScoreServerConnected } = this.props;
     const { currentTool } = this.state;
@@ -56,12 +60,19 @@ export default class Tools extends Component {
         <div className={styles.toolbar_button_container} >
           <div className={styles.left_buttons}>
             <button
-              name="server"
+              name="runScoreServer"
               className={runScoreServerConnected ? styles.connected : styles.disconnected}
               title={`${runScoreServerConnected ? 'Connected' : 'Not connected'} to RunScore Server`}
               onClick={this.retryServerConnection}
             >
               <i className="fa fa-flash" />
+            </button>
+            <button
+              name="rfidServer"
+              title="Restart the RFID Reader Server"
+              onClick={this.restartRfidServer}
+            >
+              <i className="fa fa-refresh" />
             </button>
           </div>
           <div>
