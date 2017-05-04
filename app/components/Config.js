@@ -4,19 +4,12 @@ import { readerMapType } from '../reducers/config';
 import { CONFIG_PATH } from '../constants';
 
 export const notify = (message) => {
-  let notification;
+  // Unsupported OS
   if (!('Notification' in window)) {
-    // Unsupported OS
     alert(message); // eslint-disable-line 
-  } else if (Notification.permission === 'granted') {
-    notification = new Notification(message); // eslint-disable-line
-  } else {
-    Notification.requestPermission((permission) => {
-      if (permission === 'granted') {
-        notification = new Notification(message); // eslint-disable-line
-      }
-    });
   }
+
+  const notification = new Notification(message); // eslint-disable-line
   notification.onclick(() => notification.close());
 };
 
