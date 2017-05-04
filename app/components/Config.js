@@ -3,6 +3,23 @@ import jetpack from 'fs-jetpack';
 import { readerMapType } from '../reducers/config';
 import { CONFIG_PATH } from '../constants';
 
+export const notify = (message) => {
+  let notification;
+  if (!('Notification' in window)) {
+    // Unsupported OS
+    alert(message); // eslint-disable-line 
+  } else if (Notification.permission === 'granted') {
+    notification = new Notification(message); // eslint-disable-line
+  } else {
+    Notification.requestPermission((permission) => {
+      if (permission === 'granted') {
+        notification = new Notification(message); // eslint-disable-line
+      }
+    });
+  }
+  notification.onclick(() => notification.close());
+};
+
 class Configuration extends Component {
   props: {
     setRunScoreAddress: () => void,
@@ -104,6 +121,7 @@ class Configuration extends Component {
         readerMap
       }
     );
+    notify('Conifgurations saved!');
   }
 
   readerMapInputFields = (address) => {
