@@ -98,14 +98,11 @@ class Configuration extends Component {
     .then(() => (
       conn.exec(password)
       .then(() => (
-        Object.keys(configs).forEach(key => {
-          console.log(`set ${key}=${configs[key]}`);
-          conn.exec(`set ${key}=${configs[key]}`);
-        })
+        Object.keys(configs).forEach(key => (
+          conn.exec(`set ${key}=${configs[key]}`)
+        ))
       ))
-    )).catch(() => (
-      console.log('bad')
-    ));
+    )).catch(() => console.log('bad'));
     conn.end();
   }
 
