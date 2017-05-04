@@ -201,7 +201,8 @@
     "react-router-redux": "^5.0.0-alpha.6",
     "redux": "^3.6.0",
     "redux-thunk": "^2.2.0",
-    "source-map-support": "^0.4.14"
+    "source-map-support": "^0.4.14",
+    "telnet-client": "^0.13.4"
   },
   "devEngines": {
     "node": ">=6.x",
