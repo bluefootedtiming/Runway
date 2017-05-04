@@ -220,7 +220,7 @@ class Configuration extends Component {
         <input placeholder="Address" name="runScoreAddress" defaultValue={runScoreAddress} ref={c => (this.runScoreAddress = c)} />
         <input placeholder="Port" name="runScorePort" defaultValue={runScorePort} ref={c => (this.runScorePort = c)} />
 
-        <h2>RFID Listen Port</h2>
+        <h2>Alien Runway</h2>
         <aside>
           RFID Readers should use the IP address of this
           computer and the port listed below in as <b>TagStreamAddress</b>
