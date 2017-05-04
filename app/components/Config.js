@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import jetpack from 'fs-jetpack';
 import telnet from 'telnet-client';
+import os from 'os';
 import { readerMapType } from '../reducers/config';
 import { CONFIG_PATH } from '../constants';
 
@@ -18,17 +19,21 @@ class Configuration extends Component {
   props: {
     setRunScoreAddress: () => void,
     setRunScorePort: () => void,
+    setListenAddress: () => void,
     setListenPort: () => void,
     addReader: () => void,
     delReader: () => void,
     runScoreAddress: string,
     runScorePort: number,
+    listenAddress: string,
     listenPort: number,
     readerMap: readerMapType
   }
 
   state: {
-    readerAddresses: Array<string>
+    readerAddresses: Array<string>,
+    listenAddresses: Array<string>,
+    listenAddress: string
   }
 
   static defaultProps = {
@@ -38,29 +43,39 @@ class Configuration extends Component {
   constructor() {
     super();
     this.state = {
-      readerAddresses: []
+      readerAddresses: [],
+      listenAddresses: [],
+      listenAddress: ''
     };
   }
 
   componentWillMount() {
-    const vals = Object.keys(this.props.readerMap).length ? (
-      Object.keys(this.props.readerMap)
-    ) : (
-      ['']
-    );
-    this.setState({ readerAddresses: vals });
+    const netInterfaces = os.networkInterfaces();
+    const listenAddresses = [];
+    Object.keys(netInterfaces).forEach(key => (
+      netInterfaces[key].forEach(({ address, family }) => {
+        if (address !== '127.0.0.1' && family === 'IPv4') {
+          listenAddresses.push(address);
+        }
+      })
+    ));
+    const readerAddresses = Object.keys(this.props.readerMap).length ? Object.keys(this.props.readerMap) : [''];
+    this.setState({ listenAddresses, readerAddresses });
   }
 
-  readerConfigs = () => ({
-    username: 'alien',
-    password: 'password',
-    AutoMode: 'On',
-    NotifyMode: 'Off',
-    StreamHeader: 'Off',
-    TagStreamAddress: '192.168.1.5:3988', // TODO: Update with chosen IP address
-    TagStreamFormat: 'Custom',
-    TagStreamCustomFormat: 'RSBI,%I,%T,%N',
-  })
+  readerConfigs = () => {
+    const { listenAddress, listenPort } = this.props;
+    return {
+      username: 'alien',
+      password: 'password',
+      AutoMode: 'On',
+      NotifyMode: 'Off',
+      StreamHeader: 'Off',
+      TagStreamFormat: 'Custom',
+      TagStreamAddress: `${listenAddress}:${listenPort}`,
+      TagStreamCustomFormat: 'RSBI,%I,%T,%N',
+    };
+  }
 
   setReader = (e) => {
     const address = e.currentTarget.name.split('set-relay-')[1];
@@ -120,12 +135,14 @@ class Configuration extends Component {
       runScoreAddress: { value: runScoreAddress },
       runScorePort: { value: runScorePort },
       listenPort: { value: listenPort },
-      props: { readerMap }
+      state: { listenAddress: stateListenAddress },
+      props: { readerMap, listenAddress }
     } = this;
 
     if (runScoreAddress) { this.props.setRunScoreAddress(runScoreAddress); }
     if (runScorePort) { this.props.setRunScorePort(Number(runScorePort)); }
     if (listenPort) { this.props.setListenPort(Number(listenPort)); }
+    if (stateListenAddress !== listenAddress) { this.props.setListenAddress(stateListenAddress); }
 
     this.state.readerAddresses.forEach(key => {
       const {
@@ -150,6 +167,7 @@ class Configuration extends Component {
       {
         runScoreAddress,
         runScorePort,
+        listenAddress,
         listenPort,
         readerMap
       }
@@ -192,7 +210,7 @@ class Configuration extends Component {
   }
 
   render() {
-    const { runScoreAddress, runScorePort, listenPort } = this.props;
+    const { runScoreAddress, runScorePort, listenPort, listenAddress } = this.props;
 
     return (
       <section>
@@ -207,6 +225,17 @@ class Configuration extends Component {
           RFID Readers should use the IP address of this
           computer and the port listed below in as <b>TagStreamAddress</b>
         </aside>
+        <select
+          value={listenAddress}
+          onChange={(e) => this.setState({ listenAddress: e.target.value })}
+        >
+          {this.state.listenAddresses.length > 0 ? (
+            this.state.listenAddresses.map(address => (
+              <option key={address}> {address} </option>
+            ))) : (
+              <option>No valid addresses found.</option>
+          )}
+        </select>
         <input placeholder="Listen Port" name="listenPort" defaultValue={listenPort} ref={c => (this.listenPort = c)} />
         <h2>
           RFID Locations
