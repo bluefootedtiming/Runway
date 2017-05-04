@@ -86,7 +86,7 @@ class Configuration extends Component {
     const { username, password, ...configs } = this.readerConfigs();
     if (!this.props.readerMap[address]) return;
 
-    const conn = new telnet();
+    const conn = new telnet(); // eslint-disable-line
     conn.connect({
       host: address,
       shellPrompt: '',
