@@ -11,7 +11,7 @@ export const notify = (message) => {
   }
 
   const notification = new Notification(message); // eslint-disable-line
-  notification.onclick(() => notification.close());
+  notification.onclick = () => notification.close();
 };
 
 class Configuration extends Component {
