@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import jetpack from 'fs-jetpack';
+import telnet from 'telnet-client';
 import { readerMapType } from '../reducers/config';
 import { CONFIG_PATH } from '../constants';
 
@@ -48,6 +49,45 @@ class Configuration extends Component {
       ['']
     );
     this.setState({ readerAddresses: vals });
+  }
+
+  readerConfigs = () => ({
+    username: 'alien',
+    password: 'password',
+    AutoMode: 'On',
+    NotifyMode: 'Off',
+    StreamHeader: 'Off',
+    TagStreamAddress: '192.168.1.5:3988', // TODO: Update with chosen IP address
+    TagStreamFormat: 'Custom',
+    TagStreamCustomFormat: 'RSBI,%I,%T,%N',
+  })
+
+  setReader = (e) => {
+    const address = e.currentTarget.name.split('set-relay-')[1];
+    const { username, password, ...configs } = this.readerConfigs();
+    if (!this.props.readerMap[address]) return;
+
+    const conn = new telnet();
+    conn.connect({
+      host: address,
+      shellPrompt: '',
+      loginPrompt: /Username(>?)/,
+      passwordPrompt: /Password(>?)/,
+    });
+
+    conn.exec(username)
+    .then(() => (
+      conn.exec(password)
+      .then(() => (
+        Object.keys(configs).forEach(key => {
+          console.log(`set ${key}=${configs[key]}`);
+          conn.exec(`set ${key}=${configs[key]}`);
+        })
+      ))
+    )).catch(() => (
+      console.log('bad')
+    ));
+    conn.end();
   }
 
   addReader = () => {
@@ -138,6 +178,15 @@ class Configuration extends Component {
         >
           <i className="fa fa-minus-circle" />
         </button>
+        {(key !== 'new') &&
+          <button
+            name={`set-relay-${key}`}
+            style={{ backgroundColor: 'white', margin: 0 }}
+            onClick={this.setReader}
+          >
+            <i className="fa fa-check-circle" />
+          </button>
+        }
       </div>
     );
   }
