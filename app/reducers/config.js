@@ -2,6 +2,7 @@ import {
   LOAD_CONFIGURATIONS,
   SET_RUNSCORE_ADDRESS,
   SET_RUNSCORE_PORT,
+  SET_LISTEN_ADDRESS,
   SET_LISTEN_PORT,
   ADD_READER,
   DEL_READER
@@ -12,6 +13,7 @@ export type readerMapType = { [string]: string };
 export type configStateType = {
   runScoreAddress: string,
   runScorePort: number,
+  listenAddress: string,
   listenPort: number,
   readerMap: readerMapType
 };
@@ -19,6 +21,7 @@ export type configStateType = {
 const initialState = {
   runScoreAddress: '192.168.1.4',
   runScorePort: 3988,
+  listenAddress: '192.168.1.5',
   listenPort: 3988,
   readerMap: {
     // '192.168.1.100': 'START',
@@ -43,6 +46,12 @@ export default function config(state: configStateType = initialState, action) {
       return {
         ...state,
         runScorePort: action.payload
+      };
+
+    case SET_LISTEN_ADDRESS:
+      return {
+        ...state,
+        listenAddress: action.payload
       };
 
     case SET_LISTEN_PORT:
