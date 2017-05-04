@@ -60,7 +60,11 @@ class Configuration extends Component {
       })
     ));
     const readerAddresses = Object.keys(this.props.readerMap).length ? Object.keys(this.props.readerMap) : [''];
-    this.setState({ listenAddresses, readerAddresses });
+    this.setState({
+      listenAddress: this.props.listenAddress,
+      listenAddresses,
+      readerAddresses
+    });
   }
 
   readerConfigs = () => {
@@ -135,14 +139,14 @@ class Configuration extends Component {
       runScoreAddress: { value: runScoreAddress },
       runScorePort: { value: runScorePort },
       listenPort: { value: listenPort },
-      state: { listenAddress: stateListenAddress },
-      props: { readerMap, listenAddress }
+      state: { listenAddress },
+      props: { readerMap }
     } = this;
 
     if (runScoreAddress) { this.props.setRunScoreAddress(runScoreAddress); }
     if (runScorePort) { this.props.setRunScorePort(Number(runScorePort)); }
     if (listenPort) { this.props.setListenPort(Number(listenPort)); }
-    if (stateListenAddress !== listenAddress) { this.props.setListenAddress(stateListenAddress); }
+    if (listenAddress !== this.props.listenAddress) { this.props.setListenAddress(listenAddress); }
 
     this.state.readerAddresses.forEach(key => {
       const {
@@ -226,12 +230,12 @@ class Configuration extends Component {
           computer and the port listed below in as <b>TagStreamAddress</b>
         </aside>
         <select
-          value={listenAddress}
+          defaultValue={listenAddress}
           onChange={(e) => this.setState({ listenAddress: e.target.value })}
         >
           {this.state.listenAddresses.length > 0 ? (
             this.state.listenAddresses.map(address => (
-              <option key={address}> {address} </option>
+              <option key={address} value={address}> {address} </option>
             ))) : (
               <option>No valid addresses found.</option>
           )}
