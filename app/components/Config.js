@@ -3,6 +3,7 @@ import jetpack from 'fs-jetpack';
 import os from 'os';
 
 import SyncReaders from './SyncReaders';
+import ButtonBar, { Button } from './ButtonBar';
 import { readerMapType } from '../reducers/config';
 import { CONFIG_PATH } from '../constants';
 
@@ -211,13 +212,15 @@ class Configuration extends Component {
         </aside>
         {this.state.readerAddresses.map(address => this.readerMapInputFields(address))}
         <br />
-        <button onClick={this.onSave}>Save Settings</button>
-        {/*<button>Undo</button>*/}
-        <SyncReaders
-          listenAddress={listenAddress}
-          listenPort={listenPort}
-          readerMap={readerMap}
-        />
+        <ButtonBar>
+          <Button onClick={this.onSave} isLeftButton>Save Settings</Button>
+          {/* <button>Undo</button> */}
+          <SyncReaders
+            listenAddress={listenAddress}
+            listenPort={listenPort}
+            readerMap={readerMap}
+          />
+        </ButtonBar>
       </section>
     );
   }
