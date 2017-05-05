@@ -82,14 +82,12 @@ class Configuration extends Component {
 
   removeReader = (e) => {
     const key = e.currentTarget.name.split('remove-')[1];
-    if (this.props.readerMap[key]) this.props.delReader(key);
-
-    const newAddresses = this.state.readerAddresses;
     const index = key === 'new' ? (
       this.state.readerAddresses.indexOf('')
     ) : (
       this.state.readerAddresses.indexOf(key)
     );
+    const newAddresses = this.state.readerAddresses;
     newAddresses.splice(index, 1);
     this.setState({
       readerAddresses: newAddresses
@@ -110,6 +108,7 @@ class Configuration extends Component {
     if (listenPort) { this.props.setListenPort(Number(listenPort)); }
     if (listenAddress !== this.props.listenAddress) { this.props.setListenAddress(listenAddress); }
 
+    // Add new readers & save edited readers
     this.state.readerAddresses.forEach(key => {
       const {
         [`address-${key.length > 0 ? key : 'new'}`]: { value: address },
@@ -123,6 +122,12 @@ class Configuration extends Component {
       } else if (address !== key || name !== readerMap[key]) {
         this.props.delReader(key);
         this.props.addReader({ name, address });
+      }
+    });
+    // Delete removed readers
+    Object.keys(readerMap).forEach(address => {
+      if (!this.state.readerAddresses.includes(address)) {
+        this.props.delReader(address);
       }
     });
 
@@ -207,9 +212,8 @@ class Configuration extends Component {
         <br />
         <ButtonBar>
           <Button onClick={this.onSave} isLeftButton>
-            Save Settings
+            Save Configurations
           </Button>
-          {/* <button>Undo</button> */}
           <SyncReaders
             listenAddress={listenAddress}
             listenPort={listenPort}
