@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import jetpack from 'fs-jetpack';
-import telnet from 'telnet-client';
 import os from 'os';
+
+import SyncReaders from './SyncReaders';
 import { readerMapType } from '../reducers/config';
 import { CONFIG_PATH } from '../constants';
 
@@ -65,45 +66,6 @@ class Configuration extends Component {
       listenAddresses,
       readerAddresses
     });
-  }
-
-  readerConfigs = () => {
-    const { listenAddress, listenPort } = this.props;
-    return {
-      username: 'alien',
-      password: 'password',
-      AutoMode: 'On',
-      NotifyMode: 'Off',
-      StreamHeader: 'Off',
-      TagStreamFormat: 'Custom',
-      TagStreamAddress: `${listenAddress}:${listenPort}`,
-      TagStreamCustomFormat: 'RSBI,%I,%T,%N',
-    };
-  }
-
-  setReader = (e) => {
-    const address = e.currentTarget.name.split('set-relay-')[1];
-    const { username, password, ...configs } = this.readerConfigs();
-    if (!this.props.readerMap[address]) return;
-
-    const conn = new telnet(); // eslint-disable-line
-    conn.connect({
-      host: address,
-      shellPrompt: '',
-      loginPrompt: /Username(>?)/,
-      passwordPrompt: /Password(>?)/,
-    });
-
-    conn.exec(username)
-    .then(() => (
-      conn.exec(password)
-      .then(() => (
-        Object.keys(configs).forEach(key => (
-          conn.exec(`set ${key}=${configs[key]}`)
-        ))
-      ))
-    )).catch(() => console.log('bad'));
-    conn.end();
   }
 
   addReader = () => {
@@ -211,7 +173,7 @@ class Configuration extends Component {
   }
 
   render() {
-    const { runScoreAddress, runScorePort, listenPort, listenAddress } = this.props;
+    const { runScoreAddress, runScorePort, listenPort, listenAddress, readerMap } = this.props;
 
     return (
       <section>
@@ -250,6 +212,12 @@ class Configuration extends Component {
         {this.state.readerAddresses.map(address => this.readerMapInputFields(address))}
         <br />
         <button onClick={this.onSave}>Save Settings</button>
+        {/*<button>Undo</button>*/}
+        <SyncReaders
+          listenAddress={listenAddress}
+          listenPort={listenPort}
+          readerMap={readerMap}
+        />
       </section>
     );
   }
