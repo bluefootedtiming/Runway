@@ -53,6 +53,7 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
         })
       )).catch(() => notify(`Could not sync reader on: ${address}`));
       conn.end();
+      notify('Reader Sync Complete');
     });
   };
 
