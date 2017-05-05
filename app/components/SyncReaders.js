@@ -12,7 +12,7 @@ import { notify } from './Config';
   * @memberOf Configuration
   */
 const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
-  const readerConfigs = ({ name }) => ({
+  const readerConfigs = (name) => ({
     username: 'alien',
     password: 'password',
     ReaderName: name,
