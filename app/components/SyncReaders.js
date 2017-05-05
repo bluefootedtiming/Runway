@@ -25,6 +25,7 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
   });
 
   const sync = () => {
+    let error = false;
     Object.keys(readerMap).forEach(address => {
       if (!readerMap[address]) return;
 
@@ -40,6 +41,9 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
         shellPrompt: '',
         loginPrompt: /Username(>?)/,
         passwordPrompt: /Password(>?)/,
+      })
+      .catch(() => {
+        error = true;
       });
 
       // debug the telnet client
@@ -57,10 +61,11 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
         .then(() => conn.end())
       ))
       .catch(() => {
-        notify(`Could not sync reader on: ${address}`);
+        error = true;
       });
     });
-    notify('Reader Sync Complete');
+    if (!error) notify('Reader sync complete');
+    else notify('Issues occurred while syncing readers');
   };
 
   return (
