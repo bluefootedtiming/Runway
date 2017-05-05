@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 import Status from '../containers/AppStatus';
 import Config from '../containers/AppConfig';
+import ButtonBar, { Button } from './ButtonBar';
 import styles from './toolbar.scss';
 import { relay } from '../index';
 
@@ -57,33 +58,31 @@ export default class Tools extends Component {
 
     return (
       <div>
-        <div className={styles.toolbar_button_container} >
-          <div className={styles.left_buttons}>
-            <button
-              name="runScoreServer"
-              className={runScoreServerConnected ? styles.connected : styles.disconnected}
-              title={`${runScoreServerConnected ? 'Connected' : 'Not connected'} to RunScore Server`}
-              onClick={this.retryServerConnection}
-            >
-              <i className="fa fa-flash" />
-            </button>
-            <button
-              name="rfidServer"
-              title="Restart the RFID Reader Server"
-              onClick={this.restartRfidServer}
-            >
-              <i className="fa fa-refresh" />
-            </button>
-          </div>
-          <div>
-            <button name="status" onClick={this.toggleTool}>
-              <i className="fa fa-align-justify" />
-            </button>
-            <button name="config" onClick={this.toggleTool}>
-              <i className="fa fa-wrench" />
-            </button>
-          </div>
-        </div>
+        <ButtonBar>
+          <Button
+            name="runScoreServer"
+            className={runScoreServerConnected ? styles.connected : styles.disconnected}
+            title={`${runScoreServerConnected ? 'Connected' : 'Not connected'} to RunScore Server`}
+            onClick={this.retryServerConnection}
+            isLeftButton
+          >
+            <i className="fa fa-flash" />
+          </Button>
+          <Button
+            name="rfidServer"
+            title="Restart the RFID Reader Server"
+            onClick={this.restartRfidServer}
+            isLeftButton
+          >
+            <i className="fa fa-refresh" />
+          </Button>
+          <Button name="status" onClick={this.toggleTool}>
+            <i className="fa fa-align-justify" />
+          </Button>
+          <Button name="config" onClick={this.toggleTool}>
+            <i className="fa fa-wrench" />
+          </Button>
+        </ButtonBar>
         <div className={styles.toolbar_panel_container}>
           { currentTool && (
             <div className="tool">
