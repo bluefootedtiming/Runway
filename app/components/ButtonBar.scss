@@ -1,0 +1,15 @@
+.buttonbar_button_container {
+  display: flex;
+  justify-content: flex-end;
+
+  button {
+    background: none;
+    border: 1px solid #fff;
+    color: #fff;
+    margin-left: 0.25rem;
+  }
+}
+
+.left_buttons {
+  margin-right: auto;
+}
