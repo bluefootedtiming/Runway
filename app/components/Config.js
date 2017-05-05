@@ -160,15 +160,6 @@ class Configuration extends Component {
         >
           <i className="fa fa-minus-circle" />
         </button>
-        {(key !== 'new') &&
-          <button
-            name={`set-relay-${key}`}
-            style={{ backgroundColor: 'white', margin: 0 }}
-            onClick={this.setReader}
-          >
-            <i className="fa fa-check-circle" />
-          </button>
-        }
       </div>
     );
   }
