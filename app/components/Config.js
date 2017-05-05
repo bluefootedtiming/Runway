@@ -108,6 +108,13 @@ class Configuration extends Component {
     if (listenPort) { this.props.setListenPort(Number(listenPort)); }
     if (listenAddress !== this.props.listenAddress) { this.props.setListenAddress(listenAddress); }
 
+    // Delete removed readers
+    Object.keys(readerMap).forEach(address => {
+      console.log(this.state.readerAddresses);
+      if (!this.state.readerAddresses.includes(address)) {
+        this.props.delReader(address);
+      }
+    });
     // Add new readers & save edited readers
     this.state.readerAddresses.forEach(key => {
       const {
@@ -122,12 +129,6 @@ class Configuration extends Component {
       } else if (address !== key || name !== readerMap[key]) {
         this.props.delReader(key);
         this.props.addReader({ name, address });
-      }
-    });
-    // Delete removed readers
-    Object.keys(readerMap).forEach(address => {
-      if (!this.state.readerAddresses.includes(address)) {
-        this.props.delReader(address);
       }
     });
 
