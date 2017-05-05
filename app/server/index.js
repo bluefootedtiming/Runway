@@ -38,22 +38,22 @@ export default class RfidRelay {
   }
 
   startRfidListener() {
-    const { listenPort } = this.store.getState().config;
+    const { listenAddress, listenPort } = this.store.getState().config;
     if (this.rfidListener) this.rfidListener.close();
 
     this.rfidListener = net.createServer();
     this.rfidListener.on('connection', this.handleConnection);
 
-    this.rfidListener.on('error', (error) => {
-      log.error(error.message);
+    this.rfidListener.on('error', () => {
+      log.error(`Error starting server on: ${listenAddress}:${listenPort}`);
     });
 
     this.rfidListener.on('close', () => {
-      log.info('RFID listener stopped.');
+      log.info('Alien Runway Server stopped.');
     });
 
-    this.rfidListener.listen(listenPort, () => {
-      log.info('RFID listener started!');
+    this.rfidListener.listen(listenPort, listenAddress, () => {
+      log.info(`Alien Runway Server started on: ${listenAddress}:${listenPort}`);
     });
   }
 
