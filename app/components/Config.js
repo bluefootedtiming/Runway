@@ -9,9 +9,7 @@ import { CONFIG_PATH } from '../constants';
 
 export const notify = (message) => {
   // Unsupported OS
-  if (!('Notification' in window)) {
-    alert(message); // eslint-disable-line 
-  }
+  if (!('Notification' in window)) alert(message); // eslint-disable-line 
 
   const notification = new Notification(message); // eslint-disable-line
   notification.onclick = () => notification.close();
@@ -51,6 +49,10 @@ class Configuration extends Component {
     };
   }
 
+  /**
+    * Grab the ipv4 addresses--except for the localhost. These values fill the
+    * alien runway address dropdown.
+    */
   componentWillMount() {
     const netInterfaces = os.networkInterfaces();
     const listenAddresses = [];
@@ -204,7 +206,9 @@ class Configuration extends Component {
         {this.state.readerAddresses.map(address => this.readerMapInputFields(address))}
         <br />
         <ButtonBar>
-          <Button onClick={this.onSave} isLeftButton>Save Settings</Button>
+          <Button onClick={this.onSave} isLeftButton>
+            Save Settings
+          </Button>
           {/* <button>Undo</button> */}
           <SyncReaders
             listenAddress={listenAddress}
