@@ -7,7 +7,7 @@ import { notify } from './Config';
   * SyncReaders
   *
   * Sets the readers with configurations necessary to
-  * work with Alien Runway
+  * work with Alien Runway using the telnet-client.
   *
   * @memberOf Configuration
   */
@@ -42,6 +42,9 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
         passwordPrompt: /Password(>?)/,
       });
 
+      // debug the telnet client
+      // conn.on('data', (c) => console.log(`${c}`));
+
       conn.exec(username)
       .then(() => (
         conn.exec(password)
@@ -51,10 +54,13 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
           ));
           return conn.exec('Save');
         })
-      )).catch(() => notify(`Could not sync reader on: ${address}`));
-      conn.end();
-      notify('Reader Sync Complete');
+        .then(() => conn.end())
+      ))
+      .catch(() => {
+        notify(`Could not sync reader on: ${address}`);
+      });
     });
+    notify('Reader Sync Complete');
   };
 
   return (
