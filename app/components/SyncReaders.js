@@ -58,7 +58,7 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
   };
 
   return (
-    <button onClick={sync}> Sync Readers </button>
+    <button onClick={sync} style={{ background: 'blue' }}> Sync Readers </button>
   );
 };
 
