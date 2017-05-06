@@ -3,15 +3,14 @@ import PropTypes from 'prop-types';
 
 const DropdownSelect = (props) => (
   <select
-    defaultValue={props.defaultValue}
+    defaultValue={props.defaultValue || props.placeHolder}
     onChange={props.onChange}
   >
-    {props.options.length === 0 || !props.defaultValue ? (
-      <option>{props.placeHolder}</option>
-    ) : (
-      props.options.map(value => (
-        <option key={value} label={value} value={value} />
-    )))}
+    {(props.options.length === 0 || !props.defaultValue) &&
+      <option>{props.placeHolder}</option>}
+    {props.options.map(value => (
+      <option key={value} label={value} value={value} />
+    ))}
   </select>
 );
 
