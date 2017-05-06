@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 
 import Status from '../containers/AppStatus';
 import Config from '../containers/AppConfig';
-import ButtonBar, { Button } from './ButtonBar';
 import styles from './toolbar.scss';
+
 import { relay } from '../index';
+import ButtonBar from './ButtonBar';
+import Button from './Button';
 
 const { BrowserWindow } = require('electron').remote;
 
