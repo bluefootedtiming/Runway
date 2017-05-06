@@ -2,10 +2,16 @@ import React, { Component } from 'react';
 import jetpack from 'fs-jetpack';
 import os from 'os';
 
-import SyncReaders from './SyncReaders';
-import ButtonBar, { Button } from './ButtonBar';
-import { readerMapType } from '../reducers/config';
+import { readerMapType, eventsType } from '../reducers/config';
 import { CONFIG_PATH } from '../constants';
+
+import DropdownSelect from './DropdownSelect';
+import ReaderMapForm from './ReaderMapForm';
+import SyncReaders from './SyncReaders';
+import ButtonBar from './ButtonBar';
+import Button from './Button';
+
+const { BrowserWindow } = require('electron').remote;
 
 export const notify = (message) => {
   // Unsupported OS
@@ -27,23 +33,20 @@ class Configuration extends Component {
     runScorePort: number,
     listenAddress: string,
     listenPort: number,
-    readerMap: readerMapType
+    readerMap: readerMapType,
+    events: eventsType
   }
 
   state: {
-    readerAddresses: Array<string>,
+    readerMap: readerMapType,
     listenAddresses: Array<string>,
     listenAddress: string
-  }
-
-  static defaultProps = {
-    readerAddresses: []
   }
 
   constructor() {
     super();
     this.state = {
-      readerAddresses: [],
+      readerMap: {},
       listenAddresses: [],
       listenAddress: ''
     };
@@ -63,35 +66,46 @@ class Configuration extends Component {
         }
       })
     ));
-    const readerAddresses = Object.keys(this.props.readerMap).length ? Object.keys(this.props.readerMap) : [''];
+    const readerMap = Object.assign({}, this.props.readerMap);
     this.setState({
       listenAddress: this.props.listenAddress,
       listenAddresses,
-      readerAddresses
+      readerMap
     });
   }
 
-  addReader = () => {
-    const { readerAddresses } = this.state;
-    if (!readerAddresses.includes('')) {
+  handleEditEvents = () => {
+    let win = new BrowserWindow({ widht: 400, height: 400 });
+    win.on('closed', () => {
+      win = null;
+    });
+
+    // Load a remote URL
+    win.loadURL('https://github.com');
+  }
+
+  handleAddReader = () => {
+    if (!this.state.readerMap['']) {
       this.setState({
-        readerAddresses: readerAddresses.concat([''])
+        readerMap: { ...this.state.readerMap, '': '' }
       });
     }
   }
 
-  removeReader = (e) => {
-    const key = e.currentTarget.name.split('remove-')[1];
-    const index = key === 'new' ? (
-      this.state.readerAddresses.indexOf('')
-    ) : (
-      this.state.readerAddresses.indexOf(key)
-    );
-    const newAddresses = this.state.readerAddresses;
-    newAddresses.splice(index, 1);
-    this.setState({
-      readerAddresses: newAddresses
-    });
+  handleChangeAddress = (prevAddress, newAddress) => {
+    const newReaderMap = Object.assign({}, this.state.readerMap);
+    const event = newReaderMap[prevAddress];
+    delete newReaderMap[prevAddress];
+    this.setState({ readerMap: { ...newReaderMap, [`${newAddress}`]: event } });
+  }
+
+  handleChangeEvent = (address, event) => {
+    this.setState({ readerMap: { ...this.state.readerMap, [`${address}`]: event } });
+  }
+
+  handleRemoveReader = (address) => {
+    const { [`${address}`]: removedAddress, ...newReaderMap } = this.state.readerMap;
+    this.setState({ readerMap: newReaderMap });
   }
 
   onSave = () => {
@@ -110,29 +124,14 @@ class Configuration extends Component {
 
     // Delete removed readers
     Object.keys(readerMap).forEach(address => {
-      console.log(this.state.readerAddresses);
-      if (!this.state.readerAddresses.includes(address)) {
-        this.props.delReader(address);
-      }
+      this.props.delReader(address);
     });
     // Add new readers & save edited readers
-    this.state.readerAddresses.forEach(key => {
-      const {
-        [`address-${key.length > 0 ? key : 'new'}`]: { value: address },
-        [`name-${key.length > 0 ? key : 'new'}`]: { value: name }
-      } = this;
-
-      if (!name || !address) return;
-
-      if (readerMap[key] === undefined) {
-        this.props.addReader({ name, address });
-      } else if (address !== key || name !== readerMap[key]) {
-        this.props.delReader(key);
-        this.props.addReader({ name, address });
-      }
+    Object.entries(this.state.readerMap).forEach(([address, event]) => {
+      if (!event || !address) return;
+      this.props.addReader({ name: event, address });
     });
-
-    this.setState({ readerAddresses: Object.keys(readerMap) });
+    this.setState({ readerMap: Object.assign({}, readerMap) });
 
     jetpack.write(
       CONFIG_PATH,
@@ -147,33 +146,8 @@ class Configuration extends Component {
     notify('Conifgurations saved!');
   }
 
-  readerMapInputFields = (address) => {
-    const key = address || 'new';
-    return (
-      <div key={`reader-${key}`}>
-        <input
-          placeholder="IP Address"
-          defaultValue={address}
-          ref={c => (this[`address-${key}`] = c)}
-        />
-        <input
-          placeholder="Location/Event"
-          defaultValue={this.props.readerMap[address]}
-          ref={c => (this[`name-${key}`] = c)}
-        />
-        <button
-          name={`remove-${key}`}
-          style={{ backgroundColor: 'white', margin: 0 }}
-          onClick={this.removeReader}
-        >
-          <i className="fa fa-minus-circle" />
-        </button>
-      </div>
-    );
-  }
-
   render() {
-    const { runScoreAddress, runScorePort, listenPort, listenAddress, readerMap } = this.props;
+    const { runScoreAddress, runScorePort, listenPort, listenAddress, events } = this.props;
 
     return (
       <section>
@@ -188,37 +162,41 @@ class Configuration extends Component {
           RFID Readers should use the IP address of this
           computer and the port listed below in as <b>TagStreamAddress</b>
         </aside>
-        <select
+        <DropdownSelect
           defaultValue={listenAddress}
+          options={this.state.listenAddresses}
           onChange={(e) => this.setState({ listenAddress: e.target.value })}
-        >
-          {this.state.listenAddresses.length > 0 ? (
-            this.state.listenAddresses.map(address => (
-              <option key={address} value={address}> {address} </option>
-            ))) : (
-              <option>No valid addresses found.</option>
-          )}
-        </select>
+          placeHolder="No valid addresses found."
+        />
         <input placeholder="Listen Port" name="listenPort" defaultValue={listenPort} ref={c => (this.listenPort = c)} />
         <h2>
           RFID Locations
-          <i className="fa fa-plus-circle" onClick={this.addReader} role="button" />
+          <i className="fa fa-plus-circle" onClick={this.handleAddReader} role="button" />
         </h2>
         <aside>
           Configure Readers to use TagStreamFormat <b>%i,%N,%T</b>.
           The section below is only needed if you would rather not set
           <b>ReaderName</b> on your readers to match RunScore events.
         </aside>
-        {this.state.readerAddresses.map(address => this.readerMapInputFields(address))}
+        <ReaderMapForm
+          readerMap={this.state.readerMap}
+          eventList={events}
+          onChangeAddress={this.handleChangeAddress}
+          onChangeEvent={this.handleChangeEvent}
+          onRemoveReader={this.handleRemoveReader}
+        />
         <br />
         <ButtonBar>
           <Button onClick={this.onSave} isLeftButton>
             Save Configurations
           </Button>
+          <Button onClick={this.handleEditEvents} isLeftButton>
+            Edit Events
+          </Button>
           <SyncReaders
             listenAddress={listenAddress}
             listenPort={listenPort}
-            readerMap={readerMap}
+            readerMap={this.props.readerMap}
           />
         </ButtonBar>
       </section>
