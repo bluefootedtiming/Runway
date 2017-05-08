@@ -4,8 +4,13 @@ import path from 'path';
 import jetpack from 'fs-jetpack';
 
 import { addMessage, setRSServerConnection } from '../actions/status';
-import { LOGS_PATH, MAX_CONNECT_ATTEMPTS } from '../constants';
 
+const { app } = require('electron').remote;
+
+export const MAX_CONNECT_ATTEMPTS = 5;
+export const DOCUMENTS_PATH = app.getPath('documents');
+export const LOCAL_FOLDER = 'AlienRunwayData';
+export const LOGS_PATH = `${DOCUMENTS_PATH}/${LOCAL_FOLDER}`;
 export const log = {
   store: null,
   info(message: string) {

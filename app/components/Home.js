@@ -8,7 +8,9 @@ import TimerPanel from '../containers/TimerPanel';
 import Toolbar from '../containers/AppToolbar';
 
 import { relay } from '../index';
-import { CONFIG_PATH } from '../constants';
+import { LOGS_PATH } from '../server/';
+
+export const CONFIG_PATH = `${LOGS_PATH}/config.json`;
 
 export default class Home extends Component {
   props: {
