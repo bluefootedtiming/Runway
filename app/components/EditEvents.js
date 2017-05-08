@@ -62,10 +62,12 @@ class EditEvents extends Component {
         <h1>Edit Events</h1>
         <div>
           <input placeholder="Event/Reader Name" onChange={(c) => this.handleChangeNewEvent(c)} value={this.state.newEvent} />
-          <Button onClick={this.handleAddEvent} style={{ color: 'green', backgroundColor: 'white', margin: 0 }}>
-            <i className="fa fa-plus-circle" />
+          <Button onClick={this.handleAddEvent} style={{ margin: 0 }}>
+            {/*<i className="fa fa-plus-circle" />*/}
+            Add Event
           </Button>
         </div>
+        <br />
         {this.props.events.map((event) => (
           <EventRow key={`${event}`} event={event} onClickRemoveEvent={this.handleRemoveEvent} />
         ))}
