@@ -69,7 +69,12 @@ class Configuration extends Component {
     ));
     const readerMap = Object.assign({}, this.props.readerMap);
     this.setState({
-      listenAddress: this.props.listenAddress,
+      listenAddress: (
+        listenAddresses.includes(this.props.listenAddress) ? (
+          this.props.listenAddress
+        ) : (
+          listenAddresses[0]
+      )),
       listenAddresses,
       readerMap
     });
@@ -155,7 +160,7 @@ class Configuration extends Component {
           computer and the port listed below in as <b>TagStreamAddress</b>
         </aside>
         <DropdownSelect
-          defaultValue={listenAddress}
+          defaultValue={this.state.listenAddress}
           options={this.state.listenAddresses}
           onChange={(e) => this.setState({ listenAddress: e.target.value })}
           placeHolder="No valid addresses found."
