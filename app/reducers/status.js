@@ -18,6 +18,7 @@ export default function status(state: statusStateType = initialState, action: ac
   switch (action.type) {
     case Actions.ADD_MESSAGE:
       return {
+        ...state,
         messages: state.messages.concat(action.payload)
       };
     case Actions.RSSERVER_CONNECTED:
