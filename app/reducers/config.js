@@ -81,7 +81,7 @@ export default function config(state: configStateType = initialState, action) {
     case ADD_EVENT:
       return {
         ...state,
-        events: state.events.push(action.payload)
+        events: [...state.events, action.payload]
       };
 
     case DEL_EVENT: {
