@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 
 import Status from '../containers/AppStatus';
 import Config from '../containers/AppConfig';
+import EditEvents from '../containers/AppEditEvents';
 import styles from './toolbar.scss';
 
 import { relay } from '../index';
@@ -54,6 +55,14 @@ export default class Tools extends Component {
     relay.startRfidListener();
   }
 
+  handleOnClickEditEvents = () => {
+    this.setState({ currentTool: 'events' });
+  }
+
+  handleOnClickConfig = () => {
+    this.setState({ currentTool: 'config' });
+  }
+
   render() {
     const { runScoreServerConnected } = this.props;
     const { currentTool } = this.state;
@@ -89,7 +98,8 @@ export default class Tools extends Component {
           { currentTool && (
             <div className="tool">
               { currentTool === 'status' && <Status />}
-              { currentTool === 'config' && <Config />}
+              { currentTool === 'config' && <Config onClickEditEvents={this.handleOnClickEditEvents} />}
+              { currentTool === 'events' && <EditEvents onClickConfig={this.handleOnClickConfig} />}
             </div>
           )}
         </div>
