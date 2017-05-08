@@ -11,7 +11,7 @@ import { notify } from './Config';
   *
   * @memberOf Configuration
   */
-const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
+const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
   const readerConfigs = (name) => ({
     username: 'alien',
     password: 'password',
@@ -36,14 +36,16 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
       } = readerConfigs(readerMap[address]);
 
       const conn = new telnet(); // eslint-disable-line
+      conn.on('error', () => {
+        addMessage(`Could not sync reader on: ${address}`, 1);
+        notify('Issues occurred while syncing readers');
+      });
+
       conn.connect({
         host: address,
         shellPrompt: '',
         loginPrompt: /Username(>?)/,
         passwordPrompt: /Password(>?)/,
-      })
-      .catch(() => {
-        error = true;
       });
 
       // debug the telnet client
@@ -65,7 +67,6 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
       });
     });
     if (!error) notify('Reader sync complete');
-    else notify('Issues occurred while syncing readers');
   };
 
   return (
@@ -73,12 +74,13 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
   );
 };
 
-const { string, number, shape } = PropTypes;
+const { string, number, shape, func } = PropTypes;
 
 SyncReaders.propTypes = {
   listenAddress: string.isRequired,
   listenPort: number.isRequired,
-  readerMap: shape({ [string]: string }).isRequired
+  readerMap: shape({ [string]: string }).isRequired,
+  addMessage: func.isRequired
 };
 
 export default SyncReaders;

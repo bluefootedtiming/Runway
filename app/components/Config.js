@@ -5,9 +5,10 @@ import os from 'os';
 import { readerMapType, eventsType } from '../reducers/config';
 import { CONFIG_PATH } from '../constants';
 
+import SyncReaders from '../containers/AppSyncReaders';
+
 import DropdownSelect from './DropdownSelect';
 import ReaderMapForm from './ReaderMapForm';
-import SyncReaders from './SyncReaders';
 import ButtonBar from './ButtonBar';
 import Button from './Button';
 
