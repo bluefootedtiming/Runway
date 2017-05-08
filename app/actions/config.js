@@ -14,7 +14,7 @@ export type configurationsType = {
   listenAddress?: string,
   listenPort?: number,
   readerMap?: { [string]: string },
-  events?: [string]
+  events?: [?string]
 };
 
 export function loadConfigurations(config: configurationsType) {
