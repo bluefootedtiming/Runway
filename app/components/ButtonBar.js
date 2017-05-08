@@ -3,25 +3,29 @@ import PropTypes from 'prop-types';
 
 import styles from './ButtonBar.scss';
 
-const { element, arrayOf } = PropTypes;
+const { node } = PropTypes;
 
-const ButtonBar = (props) => (
-  <div className={styles.buttonbar_button_container} >
-    <div className={styles.left_buttons}>
-      {props.children.map(e => (
-        e.props.isLeftButton && e
-      ))}
+const ButtonBar = (props) => {
+  const children = props.children.length ? props.children : [props.children];
+
+  return (
+    <div className={styles.buttonbar_button_container} >
+      <div className={styles.left_buttons}>
+        {children.map(e => (
+          e.props.isLeftButton && e
+        ))}
+      </div>
+      <div>
+        {children.map(e => (
+          !e.props.isLeftButton && e
+        ))}
+      </div>
     </div>
-    <div>
-      {props.children.map(e => (
-        !e.props.isLeftButton && e
-      ))}
-    </div>
-  </div>
-);
+  );
+};
 
 ButtonBar.propTypes = {
-  children: arrayOf(element).isRequired
+  children: node.isRequired
 };
 
 export default ButtonBar;
