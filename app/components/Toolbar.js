@@ -9,6 +9,8 @@ import { relay } from '../index';
 import ButtonBar from './ButtonBar';
 import Button from './Button';
 
+import { APP_HEIGHT, APP_WIDTH, APP_EXTENDED_HEIGHT} from '../constants';
+
 const { BrowserWindow } = require('electron').remote;
 
 // import * as ConfigureActions from '../actions/configure';
@@ -39,8 +41,12 @@ export default class Tools extends Component {
     const currentTool = tool === previousTool ? null : tool;
 
     const win = BrowserWindow.fromId(1);
-    const height = currentTool ? 500 : 200;
-    win.setSize(400, height, true);
+    const height = currentTool ? (
+      APP_EXTENDED_HEIGHT
+    ) : (
+      APP_HEIGHT
+    );
+    win.setSize(APP_WIDTH, height, true);
 
     this.setState({ currentTool });
   }

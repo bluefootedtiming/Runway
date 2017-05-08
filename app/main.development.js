@@ -1,6 +1,8 @@
 /* eslint global-require: 1, flowtype-errors/show-errors: 0 */
 // @flow
 import { app, BrowserWindow } from 'electron';
+
+import { APP_HEIGHT, APP_WIDTH } from './constants';
 import MenuBuilder from './menu';
 
 let mainWindow = null;
@@ -47,8 +49,8 @@ app.on('ready', async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 400,
-    height: 200,
+    width: APP_WIDTH,
+    height: APP_HEIGHT,
     resizable: false,
     autoHideMenuBar: true
   });
