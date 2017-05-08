@@ -21,7 +21,7 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap }) => {
     StreamHeader: 'Off',
     TagStreamFormat: 'Custom',
     TagStreamAddress: `${listenAddress}:${listenPort}`,
-    TagStreamCustomFormat: 'RSBI,%I,%T,%N',
+    TagStreamCustomFormat: 'RSBI,%i,%T,%N',
   });
 
   const sync = () => {
