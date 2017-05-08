@@ -19,6 +19,7 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
     AutoMode: 'On',
     NotifyMode: 'Off',
     StreamHeader: 'Off',
+    TagStreamMode: 'On',
     TagStreamFormat: 'Custom',
     TagStreamAddress: `${listenAddress}:${listenPort}`,
     TagStreamCustomFormat: 'RSBI,%i,%T,%N',
