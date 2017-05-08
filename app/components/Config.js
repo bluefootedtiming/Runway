@@ -88,14 +88,14 @@ class Configuration extends Component {
     }
   }
 
-  handleChangeAddress = (prevAddress, newAddress) => {
+  handleChangeReaderAddress = (prevAddress, newAddress) => {
     const newReaderMap = Object.assign({}, this.state.readerMap);
     const event = newReaderMap[prevAddress];
     delete newReaderMap[prevAddress];
     this.setState({ readerMap: { ...newReaderMap, [`${newAddress}`]: event } });
   }
 
-  handleChangeEvent = (address, event) => {
+  handleChangeReaderEvent = (address, event) => {
     this.setState({ readerMap: { ...this.state.readerMap, [`${address}`]: event } });
   }
 
@@ -144,7 +144,7 @@ class Configuration extends Component {
   }
 
   render() {
-    const { runScoreAddress, runScorePort, listenPort, listenAddress, events } = this.props;
+    const { runScoreAddress, runScorePort, events } = this.props;
 
     return (
       <section>
@@ -165,7 +165,7 @@ class Configuration extends Component {
           onChange={(e) => this.setState({ listenAddress: e.target.value })}
           placeHolder="No valid addresses found."
         />
-        <input placeholder="Listen Port" name="listenPort" defaultValue={listenPort} ref={c => (this.listenPort = c)} />
+        <input placeholder="Listen Port" name="listenPort" defaultValue={this.props.listenPort} ref={c => (this.listenPort = c)} />
         <h2>
           RFID Locations
           <i className="fa fa-plus-circle" onClick={this.handleAddReader} role="button" />
@@ -178,8 +178,8 @@ class Configuration extends Component {
         <ReaderMapForm
           readerMap={this.state.readerMap}
           eventList={events}
-          onChangeAddress={this.handleChangeAddress}
-          onChangeEvent={this.handleChangeEvent}
+          onChangeAddress={this.handleChangeReaderAddress}
+          onChangeEvent={this.handleChangeReaderEvent}
           onRemoveReader={this.handleRemoveReader}
         />
         <br />
@@ -191,8 +191,8 @@ class Configuration extends Component {
             Edit Events
           </Button>
           <SyncReaders
-            listenAddress={listenAddress}
-            listenPort={listenPort}
+            listenAddress={this.props.listenAddress}
+            listenPort={this.props.listenPort}
             readerMap={this.props.readerMap}
           />
         </ButtonBar>
