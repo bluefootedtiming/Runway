@@ -3,7 +3,7 @@ import jetpack from 'fs-jetpack';
 import os from 'os';
 
 import { readerMapType, eventsType } from '../reducers/config';
-import { CONFIG_PATH } from '../constants';
+import { CONFIG_PATH } from './Home';
 
 import SyncReaders from '../containers/AppSyncReaders';
 
