@@ -11,7 +11,6 @@ import SyncReaders from './SyncReaders';
 import ButtonBar from './ButtonBar';
 import Button from './Button';
 
-const { BrowserWindow } = require('electron').remote;
 
 export const notify = (message) => {
   // Unsupported OS
@@ -23,6 +22,7 @@ export const notify = (message) => {
 
 class Configuration extends Component {
   props: {
+    onClickEditEvents: () => void,
     setRunScoreAddress: () => void,
     setRunScorePort: () => void,
     setListenAddress: () => void,
@@ -74,16 +74,6 @@ class Configuration extends Component {
     });
   }
 
-  handleEditEvents = () => {
-    let win = new BrowserWindow({ widht: 400, height: 400 });
-    win.on('closed', () => {
-      win = null;
-    });
-
-    // Load a remote URL
-    win.loadURL('https://github.com');
-  }
-
   handleAddReader = () => {
     if (!this.state.readerMap['']) {
       this.setState({
@@ -114,7 +104,7 @@ class Configuration extends Component {
       runScorePort: { value: runScorePort },
       listenPort: { value: listenPort },
       state: { listenAddress },
-      props: { readerMap }
+      props: { readerMap, events }
     } = this;
 
     if (runScoreAddress) { this.props.setRunScoreAddress(runScoreAddress); }
@@ -140,7 +130,8 @@ class Configuration extends Component {
         runScorePort,
         listenAddress,
         listenPort,
-        readerMap
+        readerMap,
+        events
       }
     );
     notify('Conifgurations saved!');
@@ -190,7 +181,7 @@ class Configuration extends Component {
           <Button onClick={this.onSave} isLeftButton>
             Save Configurations
           </Button>
-          <Button onClick={this.handleEditEvents} isLeftButton>
+          <Button onClick={this.props.onClickEditEvents} isLeftButton>
             Edit Events
           </Button>
           <SyncReaders
