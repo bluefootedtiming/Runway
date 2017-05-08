@@ -148,7 +148,7 @@ export default class RfidRelay {
         if (subArray[0] !== 'RSBI') return;
 
         const formattedArray = this.getFormattedReaderData(subArray, conn);
-        if (runScore) runScore.write(`${formattedArray.join(',')}\r`);
+        if (this.store.getState().status.runScoreServerConnected) runScore.write(`${formattedArray.join(',')}\r`);
 
         jetpack.appendAsync(
           path.join(LOGS_PATH, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
