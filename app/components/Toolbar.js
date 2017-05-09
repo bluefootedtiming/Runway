@@ -9,7 +9,7 @@ import { relay } from '../index';
 import ButtonBar from './ButtonBar';
 import Button from './Button';
 
-import { APP_HEIGHT, APP_WIDTH, APP_EXTENDED_HEIGHT} from '../constants';
+import { APP_HEIGHT, APP_WIDTH, APP_EXTENDED_HEIGHT } from '../constants';
 
 const { BrowserWindow } = require('electron').remote;
 
