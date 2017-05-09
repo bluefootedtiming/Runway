@@ -12,11 +12,25 @@ import { notify } from './Config';
   * @memberOf Configuration
   */
 const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
-  const readerConfigs = (name) => ({
+  /**
+    * readerConfigs
+    *
+    * Hash of default configurations for Alien RFID Readers.
+    *
+    * TODO: Figure out how to use AcquireMode in order to filter out
+    *       valid tags to send to Runway to reduce "noise data", such
+    *       as car RFID tags and tags that haven't been programmed
+    *       correctly.
+    *
+    * @param {string} name
+    */
+  const readerConfigs = (name: string) => ({
     username: 'alien',
     password: 'password',
     ReaderName: name,
     AutoMode: 'On',
+    // AcquireMode: 'Inventory',
+    // AcqG2Mask: '',
     NotifyMode: 'Off',
     StreamHeader: 'Off',
     TagStreamMode: 'On',
