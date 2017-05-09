@@ -42,6 +42,15 @@ export default class RfidRelay {
     this.runScore.end();
   }
 
+  /**
+    * startRfidListener
+    *
+    * Starts the RFID Listener server. This is what the Alien readers write to.
+    * Connections/Writes are handled via `handleConnection`.
+    *
+    * @memberOf RfidRelay
+    *
+    */
   startRfidListener() {
     const { listenAddress, listenPort } = this.store.getState().config;
     if (this.rfidListener) this.rfidListener.close();
@@ -128,6 +137,10 @@ export default class RfidRelay {
     * It's optional to write to the RunScoreServer due to the possibility of it
     * crashing/losing connection.
     *
+    * We want to reject any rows where the length of the comma separated array isn't 4,
+    * the first index isn't RSBI, and the second index isnt a number, is a number
+    * greater than 6 digits, or is a negative number
+    *
     * When writing to the csv, the reader's timestamp is appended to the end of the row.
     * This is a backup time that may or may not be useful due to readers often having
     * incorrect timing.
@@ -145,12 +158,14 @@ export default class RfidRelay {
       if (!running) return;
 
       const readerDataArray = rawReaderData
-        .split(/[,\0\r\n]/)
+        .split(/[\0\r\n]/)
         .filter(str => str !== '');
 
-      for (let i = 0; i < readerDataArray.length; i += 4) {
-        const subArray = readerDataArray.slice(i, i + 4);
-        if (subArray[0] !== 'RSBI') return;
+      readerDataArray.forEach(row => {
+        const subArray = row.split(/,/);
+        if (subArray.length !== 4
+          || subArray[0] !== 'RSBI'
+          || subArray[1].match(/[0-9]{1,6}/) === null) return;
 
         const formattedArray = this.getFormattedReaderData(subArray, conn);
         if (this.store.getState().status.runScoreServerConnected) runScore.write(`${formattedArray.join(',')}\r`);
@@ -159,7 +174,7 @@ export default class RfidRelay {
           path.join(LOGS_PATH, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
           `${formattedArray.concat(subArray[2]).join(',')}\r`
         );
-      }
+      });
     });
   }
 
@@ -205,7 +220,7 @@ export default class RfidRelay {
 
     if (readerMap[readerAddress]) newData[3] = readerMap[readerAddress];
     newData[2] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
-    newData[1] = !isNaN(readerDataArray[1]) ? parseInt(readerDataArray[1], 10) : readerDataArray[1];
+    newData[1] = parseInt(readerDataArray[1], 10);
     return newData;
   }
 }
