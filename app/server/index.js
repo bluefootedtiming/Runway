@@ -165,7 +165,7 @@ export default class RfidRelay {
         const subArray = row.split(/,/);
         if (subArray.length !== 4
           || subArray[0] !== 'RSBI'
-          || subArray[1].match(/[0-9]{1,6}/) === null) return;
+          || subArray[1].match(/^(\d){1,6}$/) === null) return;
 
         const formattedArray = this.getFormattedReaderData(subArray, conn);
         if (this.store.getState().status.runScoreServerConnected) runScore.write(`${formattedArray.join(',')}\r`);
