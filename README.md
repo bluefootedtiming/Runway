@@ -1,5 +1,6 @@
 # AlienRunway
 
+![Imgur](http://i.imgur.com/CYv4KKlm.png)
 ## Introduction
 
 AlienRunway is a middleware application that connects Alien RFID Readers to RunScore Server. When RFID readers send Bib tag information, AlienRunway inserts the time since start and forwards the message to RunScore. Backup CSVs are created by AlienRunway for each RFID Location in case the connection to RunScore is unavailable. 
@@ -43,6 +44,8 @@ The RFID Reader we use during development as well as support for reader specific
 
 ## Connecting to RunScore
 
+![Imgur](http://i.imgur.com/ItqKdvRm.png)
+
 On the initial start of the application, the app will attempt to connect to either the default RunScore Server address and port (192.168.1.4 : 3988) or the previously saved address and port.
 
 To set the address and port for the RunScore Server, click on the wrench icon —Configuration Button — and edit the input fields underneath the ‘RunScore” label. After setting them to the desired value, hit “Save Configurations”.
@@ -59,6 +62,8 @@ Upon successful connection, the message “Connected to RunScore!” will appear
 
 
 ## Configuring the Alien Runway (RFID Listen Server)
+
+![Imgur](http://i.imgur.com/91ePho2m.png)
 
 Upon startup, the RFID Listen Server initializes on the either the default RFID Listen Server address and port (192.168.1.5 : 3900) or the previously saved address and port.
 
@@ -96,6 +101,8 @@ RSBI,0542,13:20:02.12,FINISH
 ```
 
 ## Starting the Race
+
+![Imgur](http://i.imgur.com/1Xn7peCm.png)
 
 When you’re ready to start the race hit the large green “Start” button. This will begin Alien Runway’s timer and allow for RFID Reader’s tag stream to be sent along to RunScore and/or logged into the backup CSV files.
 
