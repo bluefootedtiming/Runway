@@ -1,320 +1,154 @@
 # AlienRunway
 
-TagStreamCustomFormat:
-%i    - Tag/Bib
-%N    - Reader name / Location
-%T - Last time seen
+## Introduction
 
-RSBTOI,%i,%T,%N
+AlienRunway is a middleware application that connects Alien RFID Readers to RunScore Server. When RFID readers send Bib tag information, AlienRunway inserts the time since start and forwards the message to RunScore. Backup CSVs are created by AlienRunway for each RFID Location in case the connection to RunScore is unavailable. 
 
-# electron-react-boilerplate
+AlienRunway is built with Electron and React, which allows it to be used on Windows (newer than XP), OSX, and more!
+## QuickStart
 
-### A Boilerplate for Scalable Cross-Platform Desktop Apps
+1. Go to [releases](https://github.com/oakworks/AlienRunway/releases) 
+1. Download & install either the Windows-32bit exe or the `.dmg`
+1. Run the application
+1. Click on the wrench icon (Configurations)
+1. Set the RunScore Server address and port
+1. Set the AlienRunway Listen Server address and port
+1. Hit "Save"
+1. Optionally, set all Reader Addresses and "Events" in the RFID Location fields and use the "Sync Readers"
+1. Hit the "Start" button on the timer
+1. RFID traffic is now sent to RunScore!
 
-<br/>
+# Feature Overview
 
-[![Build Status][travis-image]][travis-url]
-[![Appveyor Build Status][appveyor-image]][appveyor-url]
-[![Dependency Status][david_img]][david_site]
-[![NPM version][npm-image]][npm-url]
-[![Join the chat at https://gitter.im/electron-react-boilerplate/Lobby](https://badges.gitter.im/electron-react-boilerplate/Lobby.svg)](https://gitter.im/electron-react-boilerplate/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![OpenCollective](https://opencollective.com/electron-react-boilerplate/backers/badge.svg)](#backers)
-[![OpenCollective](https://opencollective.com/electron-react-boilerplate/sponsors/badge.svg)](#sponsors)
+Here is a list of operations that AlienRunway is capable of.
 
-[![React](/img/react-padded-90.png)](https://facebook.github.io/react/)
-[![Webpack](/img/webpack-padded-90.png)](https://webpack.github.io/)
-[![Redux](/img/redux-padded-90.png)](http://redux.js.org/)
-[![React Router](/img/react-router-padded-90.png)](https://github.com/ReactTraining/react-router)
-[![Flow](/img/flow-padded-90.png)](https://flowtype.org/)
-[![ESLint](/img/eslint-padded-90.png)](http://eslint.org/)
-[![Jest](/img/jest-padded-90.png)](https://facebook.github.io/jest/)
-[![Yarn](/img/yarn-padded-90.png)](https://yarnpkg.com/)
+1. Start an RFID Listener Server from an available address on the host computer
+1. Map RFID Readers by IP Address to specific “events” or “locations” like Start, Finish, Swim, Bike, etc
+1. Add/Delete “Events”
+1. Synchronize RFID Reader configurations across mapped readers to ensure accurate data is being received by Alien Runway
+1. Connect to a RunScore Server via a specified address & port
+1. View status messages from RFID Listener & RunScore Servers
+1. Start/Stop an editable timer
+1. Save all data sent by Readers to CSVs
 
-[Electron](http://electron.atom.io/) application boilerplate based on [React](https://facebook.github.io/react/), [Redux](https://github.com/reactjs/redux), [React Router](https://github.com/reactjs/react-router), [Webpack](http://webpack.github.io/docs/), [React Transform HMR](https://github.com/gaearon/react-transform-hmr) for rapid application development
+## Supported Software/Hardware
 
-## Screenshot
+AlienRunway is able to be built for any modern OS that electron is able to be built on (Win 32bit, Win 64bit, Mac OS, and Linux).
 
-![Electron Boilerplate Demo](https://cloud.githubusercontent.com/assets/3382565/10557547/b1f07a4e-74e3-11e5-8d27-79ab6947d429.gif)
+RunScore Server currently only runs on Windows. Meaning if you're running AlienRunway on anything besides Windows, you will need an instance of Windows in order to run RunScore server.
 
-## Install
+The RFID Reader we use during development as well as support for reader specific functions, such as "Sync Readers", is the ALR-9650. Alien Readers that are also supported are: ALR-9900, ALR-9800, and ALR-8800.
 
-* **Note: requires a node version >= 6 and an npm version >= 3.**
-* **If you have installation or compilation issues with this project, please see [our debugging guide](https://github.com/chentsulin/electron-react-boilerplate/issues/400)**
+*For more information on Alien Technology see [Alien Technology](http://www.alientechnology.com/)*
 
-First, clone the repo via git:
+## Connecting to RunScore
+
+On the initial start of the application, the app will attempt to connect to either the default RunScore Server address and port (192.168.1.4 : 3988) or the previously saved address and port.
+
+To set the address and port for the RunScore Server, click on the wrench icon —Configuration Button — and edit the input fields underneath the ‘RunScore” label. After setting them to the desired value, hit “Save Configurations”.
+
+All configurations saved will be available and used upon restart. The config file can be found in the documents folder (“User/My Documents” on Windows, “User/Documents” on OSX) under the folder named “Alien Runway Data” with a file named “config.json”.
+
+```
+/<USER>/<Documents>/'Alien Runway Data'/config.json
+```
+
+Alien Runway will stop attempting to reconnect after 5 connection attempts. After 5 attempts, the server can be manually reconnected by pressing the lightning button — RunScore Connection Status Button — on the far left of the toolbar. 
+
+Upon successful connection, the message “Connected to RunScore!” will appear in the message log. The connection status button will be green while connected/red while disconnected.
+
+
+## Configuring the Alien Runway (RFID Listen Server)
+
+Upon startup, the RFID Listen Server initializes on the either the default RFID Listen Server address and port (192.168.1.5 : 3900) or the previously saved address and port.
+
+To configure the address and port for the RFID Listener, go to the configuration panel and change the values under “Alien Runway”. The first field, address field, is a select dropdown that will automatically fill with available iPv4 addresses found on the host computer.
+
+Once changes have been made, the RFID Listener server will need to be reset in order for the changes to take affect. To do this, use the Restart Alien Runway RFID Listener (refresh icon) next to the RunScore Server Connection Status button(lightning icon). 
+
+## Configuring the RFID Locations (In Alien Runway)
+
+The RFID Locations section of the configuration maps the Alien RFID Readers to the specified “Event/Location”. These Events are used to categorize times in RunScore.
+
+Hitting the “+” icon next to the title will input a new field to add a reader’s address and set the event. Hitting “-” next to an reader will remove it from the list.
+
+Events can be added via the “Edit Events” button at the bottom of the configurations panel. This will take the user to a list of all available events to choose from. This list can be edited and all edits will be saved upon using the “Save Configurations” button on the configuration panel. Hit “Back to Config” to return to the configuration panel.
+
+## Syncing The RFID Readers
+
+In the configuration panel, at the bottom right of the panel is the “Sync Readers” button. Using this button will initiate a connection to each saved reader in the map and send a set of commands that will ensure that a) the reader will send the TagStream to the Alien Runway RFID Listen Server and b) the TagStreamFormat is the correct. 
+
+Upon completion of the sync, there will be a notification sent to the user through the native OS. Should any errors occur, a notification will be sent to the native OS as well as be logged in the status log — the triple line icon next to the wrench icon.
+
+## Configuring Readers Manually
+
+Readers can be set to send information to Alien Runway anonymously—i.e., without being preset in Alien Runway. To do this correctly, here are stipulations that need to be followed in order for Alien Runway to correctly interpret the stream:
+
+
+1. The beginning of the stream needs to begin with ‘RSBI’
+2. The stream must have its data comma separated
+3. The reader’s name must be fourth item in the stream
+
+An example stream is as follows:
+
+```
+RSBI,0542,13:20:02.12,FINISH
+```
+
+## Starting the Race
+
+When you’re ready to start the race hit the large green “Start” button. This will begin Alien Runway’s timer and allow for RFID Reader’s tag stream to be sent along to RunScore and/or logged into the backup CSV files.
+
+An offset for the timer can be set by entering the hours, minutes, and/or seconds into the timer’s fields.
+
+The TagStream format that RunScore Server accepts is as follows:
+
+```
+RSBI,<BIB>,<ELASPED_TIME>,<EVENT> 
+```
+
+Back CSV files can be viewed by navigating to your “My Documents/Documents” folder on your OS, under the folder “Alien Runway Data”. The backup CSV folder structure is as follows:
+
+```
+/<USER>/<Documents>/'Alien Runway Data'/<YYYYMMDDhhmmss>/<EVENT>.csv
+```
+
+The time portion of the path is the “start time” of the race. This is the timestamp of the moment the “Start” button of the timer was pressed, modified by the offset.
+
+The CSV row format of the backups are as follows:
+
+
+```
+RSBI,<BIB>,<ELASPED_TIME>,<EVENT>,<ALIEN_READER_TIME>
+```
+
+The “alien reader time” is appended to the end of the row, however this data isn’t sent to RunScore. If this column is removed, then the file can be imported to RunScore.
+
+# Developer Info
+
+Use the following commands to get started:
 
 ```bash
-git clone --depth=1 https://github.com/chentsulin/electron-react-boilerplate.git your-project-name
+git clone git@github.com:oakworks/AlienRunway.git
+cd AlienRunway
+npm install
+npm run dev
 ```
 
-And then install dependencies.
-**ProTip**: Install with [yarn](https://github.com/yarnpkg/yarn) for faster and safer installation:
+To build for Mac OS, use:
 
-```bash
-$ cd your-project-name && npm install
+```
+yarn run package
 ```
 
-:bulb: *In order to remove boilerplate sample code, simply run `npm run cleanup`. After this is run, the initial sample boilerplate code will be removed in order for a clean project for starting custom dev*
+To build for Win32bit, use:
 
-## Run
-
-Start the app in the `dev` environment. This starts the renderer process in [**hot-module-replacement**](https://webpack.js.org/guides/hmr-react/) mode and starts a server sends hot updates to the renderer process:
-
-```bash
-$ npm run dev
+```
+yarn run package-win32
 ```
 
-You Run these two commands __simultaneously__ in different console tabs:
+Once built, they can be fiound under `/AlienRunway/release/`
 
-```bash
-$ npm run hot-updates-server
-$ npm run start-hot-renderer
-```
+*This project is a fork of Electron React Boilerplate.*
 
-## Editor Configuration
-**Atom**
-```bash
-apm install editorconfig es6-javascript atom-ternjs javascript-snippets linter linter-eslint language-babel autocomplete-modules file-icons
-```
-
-**VSCode**
-* [Editorconfig](https://github.com/editorconfig/editorconfig-vscode)
-* [ESLint](https://github.com/Microsoft/vscode-eslint)
-* [Flow](https://github.com/flowtype/flow-for-vscode)
-* [Babel](https://github.com/dzannotti/vscode-babel)
-* [Jest](https://github.com/orta/vscode-jest)
-* [ES6 Snippets](https://marketplace.visualstudio.com/items?itemName=xabikos.JavaScriptSnippets)
-* [React Snippets](https://marketplace.visualstudio.com/items?itemName=xabikos.ReactSnippets)
-:bulb: *If you are using the `flow-for-vscode` plugin, make sure to disable the `flowtype-errors/show-errors` eslint rule in the `.eslintrc` by setting it to `0`*
-
-**Sublime**
-* [Editorconfig Integration](https://github.com/sindresorhus/editorconfig-sublime#readme)
-* [Linting](https://github.com/SublimeLinter/SublimeLinter3)
-* [ESLint Integration](https://github.com/roadhump/SublimeLinter-eslint)
-* [Syntax Highlighting](https://github.com/babel/babel-sublime)
-* [Autocompletion](https://github.com/ternjs/tern_for_sublime)
-* [Node Snippets](https://packagecontrol.io/packages/JavaScript%20%26%20NodeJS%20Snippets)
-* [ES6 Snippets](https://packagecontrol.io/packages/ES6-Toolkit)
-
-**Others**
-* [Editorconfig](http://editorconfig.org/#download)
-* [ESLint](http://eslint.org/docs/user-guide/integrations#editors)
-* Babel Syntax Plugin
-
-## DevTools
-
-#### Toggle Chrome DevTools
-
-- OS X: <kbd>Cmd</kbd> <kbd>Alt</kbd> <kbd>I</kbd> or <kbd>F12</kbd>
-- Linux: <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>I</kbd> or <kbd>F12</kbd>
-- Windows: <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>I</kbd> or <kbd>F12</kbd>
-
-*See [electron-debug](https://github.com/sindresorhus/electron-debug) for more information.*
-
-#### DevTools extension
-
-This boilerplate is included following DevTools extensions:
-
-* [Devtron](https://github.com/electron/devtron) - Install via [electron-debug](https://github.com/sindresorhus/electron-debug).
-* [React Developer Tools](https://github.com/facebook/react-devtools) - Install via [electron-devtools-installer](https://github.com/GPMDP/electron-devtools-installer).
-* [Redux DevTools](https://github.com/zalmoxisus/redux-devtools-extension) - Install via [electron-devtools-installer](https://github.com/GPMDP/electron-devtools-installer).
-
-You can find the tabs on Chrome DevTools.
-
-If you want to update extensions version, please set `UPGRADE_EXTENSIONS` env, just run:
-
-```bash
-$ UPGRADE_EXTENSIONS=1 npm run dev
-
-# For Windows
-$ set UPGRADE_EXTENSIONS=1 && npm run dev
-```
-
-
-
-## CSS Modules
-
-This boilerplate out of the box is configured to use [css-modules](https://github.com/css-modules/css-modules).
-
-All `.css` file extensions will use css-modules unless it has `.global.css`.
-
-If you need global styles, stylesheets with `.global.css` will not go through the
-css-modules loader. e.g. `app.global.css`
-
-If you want to import global css libraries (like `bootstrap`), you can just write the following code in `.global.css`:
-
-```css
-@import "~bootstrap/dist/css/bootstrap.css";
-```
-
-## Sass support
-
-If you want to use Sass in your app, you only need to import `.sass` files instead of `.css` once:
-```js
-import './app.global.scss';
-```
-
-
-## Packaging
-
-To package apps for the local platform:
-
-```bash
-$ npm run package
-```
-
-To package apps for all platforms:
-
-First, refer to [Multi Platform Build](https://github.com/electron-userland/electron-builder/wiki/Multi-Platform-Build) for dependencies.
-
-Then,
-```bash
-$ npm run package-all
-```
-
-To package apps with options:
-
-```bash
-$ npm run package -- --[option]
-```
-
-## Further commands
-
-To run the application without packaging run
-
-```bash
-$ npm run build
-$ npm start
-```
-
-To run End-to-End Test
-
-```bash
-$ npm run build
-$ npm run test-e2e
-```
-
-#### Options
-
-See [electron-builder CLI Usage](https://github.com/electron-userland/electron-builder#cli-usage)
-
-#### Module Structure
-
-This boilerplate uses a [two package.json structure](https://github.com/electron-userland/electron-builder/wiki/Two-package.json-Structure).
-
-1. If the module is native to a platform or otherwise should be included with the published package (i.e. bcrypt, openbci), it should be listed under `dependencies` in `./app/package.json`.
-2. If a module is `import`ed by another module, include it in `dependencies` in `./package.json`.   See [this ESLint rule](https://github.com/benmosher/eslint-plugin-import/blob/master/docs/rules/no-extraneous-dependencies.md).
-3. Otherwise, modules used for building, testing and debugging should be included in `devDependencies` in `./package.json`.
-
-## Static Type Checking
-This project comes with Flow support out of the box! You can annotate your code with types, [get Flow errors as ESLint errors](https://github.com/amilajack/eslint-plugin-flowtype-errors), and get [type errors during runtime](https://github.com/codemix/flow-runtime) during development. Types are completely optional.
-
-## Native-like UI
-
-If you want to have native-like User Interface (OS X El Capitan and Windows 10), [react-desktop](https://github.com/gabrielbull/react-desktop) may perfect suit for you.
-
-## Dispatching redux actions from main process
-
-see discusses in [#118](https://github.com/chentsulin/electron-react-boilerplate/issues/118) and [#108](https://github.com/chentsulin/electron-react-boilerplate/issues/108)
-
-## How to keep the boilerplate updated
-
-If your application is a fork from this repo, you can add this repo to another git remote:
-
-```sh
-git remote add upstream https://github.com/chentsulin/electron-react-boilerplate.git
-```
-
-Then, use git to merge some latest commits:
-
-```sh
-git pull upstream master
-```
-
-## Maintainers
-
-- [C. T. Lin](https://github.com/chentsulin)
-- [Jhen-Jie Hong](https://github.com/jhen0409)
-- [Amila Welihinda](https://github.com/amilajack)
-
-## Backers
-
-Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/electron-react-boilerplate#backer)]
-
-<a href="https://opencollective.com/electron-react-boilerplate/backer/0/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/0/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/1/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/1/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/2/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/2/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/3/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/3/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/4/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/4/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/5/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/5/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/6/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/6/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/7/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/7/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/8/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/8/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/9/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/9/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/10/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/10/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/11/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/11/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/12/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/12/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/13/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/13/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/14/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/14/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/15/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/15/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/16/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/16/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/17/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/17/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/18/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/18/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/19/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/19/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/20/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/20/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/21/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/21/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/22/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/22/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/23/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/23/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/24/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/24/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/25/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/25/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/26/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/26/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/27/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/27/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/28/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/28/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/backer/29/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/backer/29/avatar.svg"></a>
-
-## Sponsors
-
-Become a sponsor and get your logo on our README on Github with a link to your site. [[Become a sponsor](https://opencollective.com/electron-react-boilerplate#sponsor)]
-
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/0/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/1/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/2/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/3/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/4/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/5/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/6/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/7/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/8/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/9/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/9/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/10/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/10/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/11/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/11/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/12/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/12/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/13/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/13/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/14/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/14/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/15/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/15/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/16/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/16/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/17/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/17/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/18/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/18/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/19/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/19/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/20/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/20/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/21/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/21/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/22/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/22/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/23/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/23/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/24/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/24/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/25/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/25/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/26/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/26/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/27/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/27/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/28/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/28/avatar.svg"></a>
-<a href="https://opencollective.com/electron-react-boilerplate/sponsor/29/website" target="_blank"><img src="https://opencollective.com/electron-react-boilerplate/sponsor/29/avatar.svg"></a>
-
-## License
-MIT © [C. T. Lin](https://github.com/chentsulin)
-
-[npm-image]: https://img.shields.io/npm/v/electron-react-boilerplate.svg?style=flat-square
-[npm-url]: https://npmjs.org/package/electron-react-boilerplate
-[travis-image]: https://travis-ci.org/chentsulin/electron-react-boilerplate.svg?branch=master
-[travis-url]: https://travis-ci.org/chentsulin/electron-react-boilerplate
-[appveyor-image]: https://ci.appveyor.com/api/projects/status/github/chentsulin/electron-react-boilerplate?svg=true
-[appveyor-url]: https://ci.appveyor.com/project/chentsulin/electron-react-boilerplate/branch/master
-[david_img]: https://img.shields.io/david/chentsulin/electron-react-boilerplate.svg
-[david_site]: https://david-dm.org/chentsulin/electron-react-boilerplate
+*For more developer information see [electron-react-boilerplate](https://github.com/chentsulin/electron-react-boilerplate)*
