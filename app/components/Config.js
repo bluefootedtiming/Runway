@@ -169,7 +169,7 @@ class Configuration extends Component {
         />
         <input placeholder="Listen Port" name="listenPort" defaultValue={this.props.listenPort} ref={c => (this.listenPort = c)} />
         <h2>
-          RFID Locations
+          RFID Readers
           <i className="fa fa-plus-circle" onClick={this.handleAddReader} role="button" />
         </h2>
         <aside>

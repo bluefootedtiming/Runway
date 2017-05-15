@@ -22,12 +22,12 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
     *       as car RFID tags and tags that haven't been programmed
     *       correctly.
     *
-    * @param {string} name
+    * @param {string} event
     */
-  const readerConfigs = (name: string) => ({
+  const readerConfigs = (event: string) => ({
     username: 'alien',
     password: 'password',
-    ReaderName: name,
+    ReaderName: event,
     AutoMode: 'On',
     // AcquireMode: 'Inventory',
     // AcqG2Mask: '',
