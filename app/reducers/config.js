@@ -8,20 +8,9 @@ import {
   ADD_READER,
   DEL_READER,
   ADD_EVENT,
-  DEL_EVENT
+  DEL_EVENT,
+  configurationsType
 } from '../actions/config';
-
-export type readerMapType = { [string]: string };
-export type eventsType = [?string];
-
-export type configStateType = {
-  runScoreAddress: string,
-  runScorePort: number,
-  listenAddress: string,
-  listenPort: number,
-  readerMap: readerMapType,
-  events: eventsType
-};
 
 const initialState = {
   runScoreAddress: '192.168.1.4',
@@ -35,7 +24,7 @@ const initialState = {
   events: []
 };
 
-export default function config(state: configStateType = initialState, action) {
+export default function config(state: configurationsType = initialState, action) {
   switch (action.type) {
     case LOAD_CONFIGURATIONS:
       return {

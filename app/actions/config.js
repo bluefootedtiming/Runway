@@ -8,14 +8,17 @@ export const ADD_READER = 'ADD_READER';
 export const DEL_READER = 'DEL_READER';
 export const ADD_EVENT = 'ADD_EVENT';
 export const DEL_EVENT = 'DEL_EVENT';
-export type readerType = { name: string, address: string };
+
+export type readerType = { address: string, event: string };
+export type readerMapType = Array<readerType>;
+export type eventsType = Array<?string>;
 export type configurationsType = {
   runScoreAddress?: string,
   runScorePort?: number,
   listenAddress?: string,
   listenPort?: number,
-  readerMap?: { [string]: string },
-  events?: [?string]
+  readerMap?: readerMapType,
+  events?: eventsType
 };
 
 export function loadConfigurations(config: configurationsType) {
