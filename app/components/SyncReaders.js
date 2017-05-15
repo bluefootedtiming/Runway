@@ -41,14 +41,12 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
 
   const sync = () => {
     let error = false;
-    Object.keys(readerMap).forEach(address => {
-      if (!readerMap[address]) return;
-
+    readerMap.forEach(({ address, event }) => {
       const {
         username,
         password,
         ...configs
-      } = readerConfigs(readerMap[address]);
+      } = readerConfigs(event);
 
       const conn = new telnet(); // eslint-disable-line
       conn.on('error', () => {
@@ -89,12 +87,17 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
   );
 };
 
-const { string, number, shape, func } = PropTypes;
+const { arrayOf, string, number, shape, func } = PropTypes;
+
+export const readerShape = {
+  address: string,
+  event: string
+};
 
 SyncReaders.propTypes = {
   listenAddress: string.isRequired,
   listenPort: number.isRequired,
-  readerMap: shape({ [string]: string }).isRequired,
+  readerMap: arrayOf(shape(readerShape)).isRequired,
   addMessage: func.isRequired
 };
 

@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import DropdownSelect from './DropdownSelect';
+import { readerShape } from './SyncReaders';
 
 const { shape, string, func, arrayOf } = PropTypes;
 
@@ -46,23 +47,20 @@ const ReaderMapForm = (props) => {
   const { readerMap, ...readerFieldProps } = props;
   return (
     <div>
-      {Object.keys(readerMap).length > 0 ? (
-          Object.entries(readerMap).sort((a, b) => a > b).map(([address, event]) => (
-            <ReaderFields
-              key={`reader-${address}`}
-              {...{ address, event, ...readerFieldProps }}
-            />
-          ))
-        ) : (
-          <ReaderFields {...readerFieldProps} />
-        )
+      {readerMap.length > 0 &&
+        readerMap.map(({ address, event }) => (
+          <ReaderFields
+            key={`reader-${address}`}
+            {...{ address, event, ...readerFieldProps }}
+          />
+        ))
       }
     </div>
   );
 };
 
 ReaderMapForm.propTypes = {
-  readerMap: shape({ [string]: string }),
+  readerMap: arrayOf(shape(readerShape)).isRequired,
   eventList: arrayOf(string),
   onChangeAddress: func.isRequired,
   onChangeEvent: func.isRequired,

@@ -17,10 +17,7 @@ const initialState = {
   runScorePort: 3988,
   listenAddress: '192.168.1.5',
   listenPort: 3988,
-  readerMap: {
-    // '192.168.1.100': 'START',
-    // '192.168.1.102': 'FINISH'
-  },
+  readerMap: [],
   events: []
 };
 
@@ -62,16 +59,17 @@ export default function config(state: configurationsType = initialState, action)
       };
 
     case ADD_READER: {
-      const { name, address } = action.payload;
-      const newState = Object.assign({}, state);
-      newState.readerMap[address] = name;
-      return newState;
+      return {
+        ...state,
+        readerMap: state.readerMap.concat(action.payload)
+      };
     }
 
     case DEL_READER: {
-      const newState = Object.assign({}, state);
-      delete newState.readerMap[action.payload];
-      return newState;
+      return {
+        ...state,
+        readerMap: state.readerMap.filter(({ address }) => address !== action.payload)
+      };
     }
 
     case ADD_EVENT:
