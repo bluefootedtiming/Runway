@@ -4,6 +4,7 @@ import {
   SET_RUNSCORE_PORT,
   SET_LISTEN_ADDRESS,
   SET_LISTEN_PORT,
+  SET_READER_MAP,
   ADD_READER,
   DEL_READER,
   ADD_EVENT,
@@ -63,6 +64,12 @@ export default function config(state: configStateType = initialState, action) {
       return {
         ...state,
         listenPort: action.payload
+      };
+
+    case SET_READER_MAP:
+      return {
+        ...state,
+        readerMap: action.payload
       };
 
     case ADD_READER: {
