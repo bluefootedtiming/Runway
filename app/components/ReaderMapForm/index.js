@@ -11,10 +11,10 @@ const ReaderMapForm = (props) => {
   return (
     <div>
       {readerMap.length > 0 &&
-        readerMap.map(({ address, event }) => (
+        readerMap.map((reader) => (
           <ReaderFields
-            key={`reader-${address}`}
-            {...{ address, event, ...readerFieldProps }}
+            key={`reader-${reader.address}`}
+            {...{ ...reader, ...readerFieldProps }}
           />
         ))
       }

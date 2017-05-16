@@ -21,7 +21,9 @@ const ReaderFields = (props) => (
     <input
       name="isLLRP"
       type="checkbox"
+      value={props.isLLRP}
       checked={props.isLLRP}
+      onChange={() => props.onChangeValue('isLLRP', props.address, !props.isLLRP)}
     />
     <DropdownSelect
       placeHolder="Location/Event"
@@ -42,7 +44,7 @@ ReaderFields.defaultProps = {
   address: '',
   port: '',
   event: '',
-  isLLRP: false
+  isLLRP: true
 };
 
 ReaderFields.propTypes = {
