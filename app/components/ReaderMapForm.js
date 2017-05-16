@@ -4,21 +4,31 @@ import PropTypes from 'prop-types';
 import DropdownSelect from './DropdownSelect';
 import { readerShape } from './SyncReaders';
 
-const { shape, string, func, arrayOf } = PropTypes;
+const { shape, string, bool, func, arrayOf } = PropTypes;
 
 const ReaderFields = (props) => (
   <div>
     {/* Set the input to onBlur so update only occurs if the input is no longer in focus */}
     <input
-      placeholder="IP Address"
+      placeholder="Address"
       defaultValue={props.address}
-      onBlur={(val) => props.onChangeAddress(props.address, val.target.value)}
+      onBlur={(val) => props.onChangeValue('address', props.address, val.target.value)}
+    />
+    <input
+      placeholder="Port (Optional)"
+      defaultValue={props.port}
+      onBlur={(val) => props.onChangeValue('port', props.address, val.target.value)}
+    />
+    <input
+      name="isLLRP"
+      type="checkbox"
+      checked={props.isLLRP}
     />
     <DropdownSelect
       placeHolder="Location/Event"
       defaultValue={props.event}
       options={props.eventList}
-      onChange={(val) => props.onChangeEvent(props.address, val.target.value)}
+      onChange={(val) => props.onChangeValue('event', props.address, val.target.value)}
     />
     <button
       style={{ backgroundColor: 'white', margin: 0 }}
@@ -31,15 +41,18 @@ const ReaderFields = (props) => (
 
 ReaderFields.defaultProps = {
   address: '',
-  event: ''
+  port: '',
+  event: '',
+  isLLRP: false
 };
 
 ReaderFields.propTypes = {
   address: string,
+  port: string,
+  isLLRP: bool,
   event: string,
   eventList: arrayOf(string).isRequired,
-  onChangeAddress: func.isRequired,
-  onChangeEvent: func.isRequired,
+  onChangeValue: func.isRequired,
   onRemoveReader: func.isRequired,
 };
 
@@ -62,8 +75,7 @@ const ReaderMapForm = (props) => {
 ReaderMapForm.propTypes = {
   readerMap: arrayOf(shape(readerShape)).isRequired,
   eventList: arrayOf(string),
-  onChangeAddress: func.isRequired,
-  onChangeEvent: func.isRequired,
+  onChangeValue: func.isRequired,
   onRemoveReader: func.isRequired
 };
 

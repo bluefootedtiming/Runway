@@ -76,6 +76,7 @@ class Configuration extends Component {
       listenAddresses,
       readerMap: this.props.readerMap
     });
+    if (this.state.readerMap.length === 0) this.handleAddReader();
   }
 
   componentWillUpdate() {
@@ -90,19 +91,10 @@ class Configuration extends Component {
     }
   }
 
-  handleChangeReaderAddress = (prevAddress, newAddress) => {
-    if (prevAddress === newAddress) return;
-
-    const index = this.state.readerMap.findIndex(({ address }) => address === prevAddress);
-    const newMap = [...this.state.readerMap];
-    newMap[index].address = newAddress;
-    this.setState({ readerMap: newMap });
-  }
-
-  handleChangeReaderEvent = (key, newEvent) => {
+  handleChangeReaderValue = (name, key, newVal) => {
     const index = this.state.readerMap.findIndex(({ address }) => address === key);
     const newMap = [...this.state.readerMap];
-    newMap[index].event = newEvent;
+    newMap[index][`${name}`] = newVal;
     this.setState({ readerMap: newMap });
   }
 
@@ -180,8 +172,7 @@ class Configuration extends Component {
         <ReaderMapForm
           readerMap={this.state.readerMap}
           eventList={events}
-          onChangeAddress={this.handleChangeReaderAddress}
-          onChangeEvent={this.handleChangeReaderEvent}
+          onChangeValue={this.handleChangeReaderValue}
           onRemoveReader={this.handleRemoveReader}
         />
         <br />
