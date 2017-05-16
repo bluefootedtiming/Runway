@@ -2,15 +2,15 @@ import React, { Component } from 'react';
 import jetpack from 'fs-jetpack';
 import os from 'os';
 
-import { readerMapType, eventsType } from '../actions/config';
-import { CONFIG_PATH } from './Home';
+import { readerMapType, eventsType } from '../../actions/config';
+import { CONFIG_PATH } from '../Home';
 
-import SyncReaders from '../containers/AppSyncReaders';
+import SyncReaders from '../../containers/AppSyncReaders';
 
-import DropdownSelect from './DropdownSelect';
-import ReaderMapForm from './ReaderMapForm';
-import ButtonBar from './ButtonBar';
-import Button from './Button';
+import DropdownSelect from '../DropdownSelect';
+import ReaderMapForm from '../ReaderMapForm';
+import ButtonBar from '../ButtonBar';
+import Button from '../Button';
 
 
 export const notify = (message) => {

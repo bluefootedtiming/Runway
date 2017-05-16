@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import telnet from 'telnet-client';
-import { notify } from './Config';
+import { notify } from '../Config';
 
 /**
   * SyncReaders

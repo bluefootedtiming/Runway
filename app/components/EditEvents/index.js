@@ -1,22 +1,9 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 
-import ButtonBar from './ButtonBar';
-import Button from './Button';
+import EventRow from './EventRow';
 
-const EventRow = (props) => (
-  <div>
-    <input placeholder="Event/Reader Name" defaultValue={props.event} contentEditable={false} />
-    <Button onClick={() => props.onClickRemoveEvent(props.event)} style={{ background: 'white', margin: 0 }}>
-      <i className="fa fa-minus-circle" />
-    </Button>
-  </div>
-);
-
-EventRow.propTypes = {
-  event: PropTypes.string.isRequired,
-  onClickRemoveEvent: PropTypes.func.isRequired
-};
+import ButtonBar from '../ButtonBar';
+import Button from '../Button';
 
 class EditEvents extends Component {
   props: {

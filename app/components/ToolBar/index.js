@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 
-import Status from '../containers/AppStatus';
-import Config from '../containers/AppConfig';
-import EditEvents from '../containers/AppEditEvents';
-import styles from './toolbar.scss';
+import Status from '../../containers/AppStatus';
+import Config from '../../containers/AppConfig';
+import EditEvents from '../../containers/AppEditEvents';
+import styles from './ToolBar.scss';
 
-import { relay } from '../index';
-import ButtonBar from './ButtonBar';
-import Button from './Button';
+import { relay } from '../../index';
+import ButtonBar from '../ButtonBar';
+import Button from '../Button';
 
-import { APP_HEIGHT, APP_WIDTH, APP_EXTENDED_HEIGHT } from '../constants';
+import { APP_HEIGHT, APP_WIDTH, APP_EXTENDED_HEIGHT } from '../../constants';
 
 const { BrowserWindow } = require('electron').remote;
 
