@@ -39,45 +39,62 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
     TagStreamCustomFormat: 'RSBI,%i,%T,%N',
   });
 
+  let error = false;
+
+  const LLRPSetup = (reader) => {
+    console.log(`Connecting to: ${reader.address}:${reader.port}`);
+  };
+
+  /**
+    * nonLLRPSetup
+    *
+    * Connect to and setup a reader that is capable of using nonLLRP commands.
+    * This was the original model that we worked with (ALR-9650) and has now
+    * been set to the side as special case--swapped with the GS1Standard LLRP
+    * Command set.
+    *
+    * @param {object} address - The address of the reader
+    * @param {object} configs - Configurations for the reader
+    */
+  const nonLLRPSetup = ({ address }, { username, password, ...configs }) => {
+    const conn = new telnet(); // eslint-disable-line
+    conn.on('error', () => {
+      addMessage(`Could not sync reader on: ${address}`, 1);
+      notify('Issues occurred while syncing readers');
+    });
+
+    conn.connect({
+      host: address,
+      shellPrompt: '',
+      loginPrompt: /Username(>?)/,
+      passwordPrompt: /Password(>?)/,
+    });
+
+    // debug the telnet client
+    // conn.on('data', (c) => console.log(`${c}`));
+
+    conn.exec(username)
+    .then(() => (
+      conn.exec(password)
+      .then(() => {
+        Object.keys(configs).forEach(key => (
+          conn.exec(`set ${key}=${configs[key]}`)
+        ));
+        return conn.exec('Save');
+      })
+      .then(() => conn.end())
+    ))
+    .catch(() => {
+      error = true;
+    });
+  };
+
   const sync = () => {
-    let error = false;
-    readerMap.forEach(({ address, event }) => {
-      const {
-        username,
-        password,
-        ...configs
-      } = readerConfigs(event);
-
-      const conn = new telnet(); // eslint-disable-line
-      conn.on('error', () => {
-        addMessage(`Could not sync reader on: ${address}`, 1);
-        notify('Issues occurred while syncing readers');
-      });
-
-      conn.connect({
-        host: address,
-        shellPrompt: '',
-        loginPrompt: /Username(>?)/,
-        passwordPrompt: /Password(>?)/,
-      });
-
-      // debug the telnet client
-      // conn.on('data', (c) => console.log(`${c}`));
-
-      conn.exec(username)
-      .then(() => (
-        conn.exec(password)
-        .then(() => {
-          Object.keys(configs).forEach(key => (
-            conn.exec(`set ${key}=${configs[key]}`)
-          ));
-          return conn.exec('Save');
-        })
-        .then(() => conn.end())
-      ))
-      .catch(() => {
-        error = true;
-      });
+    readerMap.forEach(reader => {
+      if (!reader.LLRP) {
+        nonLLRPSetup(reader, readerConfigs(reader.event));
+      }
+      LLRPSetup(reader);
     });
     if (!error) notify('Reader sync complete');
   };
