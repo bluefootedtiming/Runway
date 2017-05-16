@@ -86,9 +86,9 @@ class Configuration extends Component {
   }
 
   handleAddReader = () => {
-    if (this.state.readerMap.findIndex(({ event }) => event === '') < 0) {
+    if (this.state.readerMap.findIndex(({ address }) => address === '') < 0) {
       this.setState({
-        readerMap: [{ address: '', event: '' }, ...this.state.readerMap]
+        readerMap: [{ address: '', event: '', isLLRP: true }, ...this.state.readerMap]
       });
     }
   }
