@@ -12,6 +12,8 @@ import ReaderMapForm from '../ReaderMapForm';
 import ButtonBar from '../ButtonBar';
 import Button from '../Button';
 
+import styles from './Config.scss';
+
 
 export const notify = (message) => {
   // Unsupported OS
@@ -141,7 +143,7 @@ class Configuration extends Component {
     const { runScoreAddress, runScorePort, events } = this.props;
 
     return (
-      <section>
+      <section style={styles.input}>
         <h1>Configuration</h1>
 
         <h2>RunScore</h2>
@@ -175,6 +177,9 @@ class Configuration extends Component {
           onChangeValue={this.handleChangeReaderValue}
           onRemoveReader={this.handleRemoveReader}
         />
+        <small>
+          **Note: Uncheck reader if nonLLRP
+        </small>
         <br />
         <ButtonBar>
           <Button onClick={this.onSave} isLeftButton>
