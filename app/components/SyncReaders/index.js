@@ -80,11 +80,6 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
     *
     * Hash of default configurations for Alien RFID Readers.
     *
-    * TODO: Figure out how to use AcquireMode in order to filter out
-    *       valid tags to send to Runway to reduce "noise data", such
-    *       as car RFID tags and tags that haven't been programmed
-    *       correctly.
-    *
     * @param {string} event
     */
   const readerConfigs = (event: string = '') => ({
