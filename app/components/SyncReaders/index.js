@@ -6,6 +6,7 @@ import telnet from 'telnet-client';
 import { Buffer } from 'buffer';
 
 import { notify } from '../Config';
+import Button from '../Button';
 
 /**
   * createLLRPMessage
@@ -185,7 +186,7 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
   };
 
   return (
-    <button onClick={sync} style={{ background: 'blue' }}> Sync Readers </button>
+    <Button onClick={sync} style={{ background: 'blue' }}> Sync Readers </Button>
   );
 };
 
