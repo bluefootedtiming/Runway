@@ -84,9 +84,6 @@ const calcLength = (...args) => {
   * @return {Buffer}
   */
 export const createLLRPMessage = (id: number, type: number, parameters: Array<string> = []) => {
-  if (!isNaN(id) && parseInt(id, 16)) return null;
-  if (!isNaN(type)) return null;
-
   const msgType = type.toString(16);
   const resTypeHex = `04${fill(2, msgType.length)}${msgType}`;
 
@@ -102,13 +99,13 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
   const msg = `${resTypeHex}${lengthHex}${idHex}${paramsHex}`;
 
   console.log(`createLLRPMessage, ${type}: ${msg}`);
-  return Buffer.from(msg, 'hex');
+  return Buffer.from(msg.length % 2 === 0 ? msg : `${msg}0`, 'hex');
 };
 
 /**
-  * createLLRPParameter
+  * createTLVParam
   *
-  * Returns a hex string of an LLRP Parameter for a given parameter.
+  * Returns a hex string of an TLV Parameter for a given parameter.
   *
   * Parameters can either be TLV or TV parameters.
   * TLV parameters can contain TV parameters and TV parameters
@@ -124,7 +121,7 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
   *
   * @return {string}
   */
-const createLLRPParameter = (parameter: parameterType, tvParams: Array<parameterType> = []) => {
+const createTLVParam = (parameter: parameterType, tvParams: Array<parameterType> = []) => {
   const { parameterConstant: { type: paramType, hasSubParameter }, values } = parameter;
   const resTypeHex = `${fill(4, paramType.toString(16).length)}${paramType.toString(16)}`;
 
@@ -173,7 +170,13 @@ export const startROSpec = () => {
 export const getReaderConfig = () => {
   const message = createLLRPMessage(
     0x22,
-    MSG_CONST.GET_READER_CONFIG
+    MSG_CONST.GET_READER_CONFIG,
+    [
+      '0000', /* Antenna ID = 0 => All */
+      '00',  /* Requested Data = 0 => All */
+      '0000', /* GPI Port Num = 0 => All */
+      '0000' /* GPO Port Num = 0 => All */
+    ]
   );
   return message;
 };
@@ -184,7 +187,7 @@ export const setReaderConfig = () => {
     MSG_CONST.SET_READER_CONFIG,
     [
       '00', /* Reserved */
-      createLLRPParameter({
+      createTLVParam({
         parameterConstant: PRM_CONST.EventsAndReports,
         values: [
           8 /* Set HoldEventsAndReportsUponReconnect = true */
