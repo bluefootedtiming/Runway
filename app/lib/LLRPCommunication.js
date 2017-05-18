@@ -33,6 +33,16 @@ type parameterType = {
   */
 const fill = (total: number, len: number) => (len < total ? '0'.repeat(total - len) : '');
 
+/**
+  * calcLength
+  *
+  * Calculate the number of octets out of hex strings.
+  * Round up on odd numbers.
+  *
+  * @param {Array<string>} args
+  *
+  * @return {int}
+  */
 const calcLength = (...args) => {
   const totalLength = args.reduce((acc, arg) => acc + arg.length, 0);
   return parseInt(totalLength / 2, 10) + parseInt(totalLength % 2, 10);
@@ -44,10 +54,10 @@ const calcLength = (...args) => {
   * Takes a message type and a list of parameters to create a hex string
   * that can be placed into a buffer and written to an LLRP server.
   *
-  * Simply, first 2 octets describe the reserved and version,
-  * next 2 octets describe the message type,
-  * next 8 octets describe the message length (length of the message value, i.e. all parameters),
-  * next 8 octets describe the message ID (this can be left blank unless specifed),
+  * Simply, first octet describe the reserved and version,
+  * next octet describe the message type,
+  * next 4 octets describe the message length (length of the message value, i.e. all parameters),
+  * next 4 octets describe the message ID (this can be left blank unless specifed),
   * and the next variable amount of octets (described by the message length) describes
   * the message value
   *
@@ -56,24 +66,27 @@ const calcLength = (...args) => {
   *
   * - ['04'] => 0000 0100 => Version 1
   * - ['03'] => 0000 0010 => SET_READER_CONFIG: 3
-  * - ['00000010'] => ... 0000 0001 0000 0000 => Message length = 64 bits/12 octets
+  * - ['00000010'] => ... 0001 0000 => Message length => 16 octets
   * - ['00000000'] => ... => Message ID
   * - ['0000e2000580'] => Message Value which is:
   *   - ['00'] => Reserved
   *   - ['00e2000580'] => 0000 0000 1110 0010 0000 0000 0000 0101 1000 0000
   *   -                 => The ReaderEventNotificationSpecParameter which is:
   *     - ['00e2'] => This is the reserved bits and the type (226) EventsAndReports
-  *     - ['0005'] => Length
+  *     - ['0005'] => Length => 5 octets
   *     - ['8'] => HoldEventsAndReportsUponReconnect = true
   *
   *
+  * @param {number}         id   - Message ID in Hex
   * @param {number}         type - Message PropTypes
   * @param {Array<string>}  parameters - A list of LLRPParameter hex strings
-  * @param {messageOptionsType}
   *
-  * @return {string}
+  * @return {Buffer}
   */
 export const createLLRPMessage = (id: number, type: number, parameters: Array<string> = []) => {
+  if (!isNaN(id) && parseInt(id, 16)) return null;
+  if (!isNaN(type)) return null;
+
   const msgType = type.toString(16);
   const resTypeHex = `04${fill(2, msgType.length)}${msgType}`;
 
@@ -95,25 +108,19 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
 /**
   * createLLRPParameter
   *
-  * Returns a hex string of an LLRP Parameter for a given paramType.
+  * Returns a hex string of an LLRP Parameter for a given parameter.
   *
   * Parameters can either be TLV or TV parameters.
   * TLV parameters can contain TV parameters and TV parameters
   * cannot. TLV parameters begin with a 0 in bit 0 and
   * TV parameters begin with a 1 in bit 0
   *
-  * For TLV parameters, the first 1 & 1/2 octets are reserved
-  * the next 2 & 1/2 octets are the Parameter type
-  * the next 4 octets are the Parameter length (the total length of the parameter value)
-  * the remaining bits contain the parameter value.
-  *
   * For TV parameters, the first bit is set to true
   * the next 7 bits are the Parameter type
   * and the remaining bits contain the paramter value
   *
-  * @param {parameterType}        paramType
-  * @param {string|number}        value
-  * @param {Array<SubParamType>}  subParams
+  * @param {parameterType}        parameter
+  * @param {Array<parameterType>}  tvParams
   *
   * @return {string}
   */
@@ -136,8 +143,7 @@ const createLLRPParameter = (parameter: parameterType, tvParams: Array<parameter
 /**
   * createTVParam
   *
-  * Takes a tvParameter which contains a constant and a set of values
-  * and returns a hex respresentation of the parameter.
+  * Takes a TV-encoded Parameter and returns a hex string of the parameter.
   *
   * @param {tvParameterType} tvParam
   */
