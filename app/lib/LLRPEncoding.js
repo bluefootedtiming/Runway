@@ -1,12 +1,10 @@
 /**
-  * LLRPCommunications.js
+  * LLRPEncoding.js
   *
-  * @fileoverview Holds the methods to communicate to an LLRP reader
+  * @fileoverview Holds the methods to encode messages for an LLRP reader
   */
 
 import { Buffer } from 'buffer';
-import * as MSG_CONST from './LLRPMessageConstants';
-import * as PRM_CONST from './LLRPParameterConstants';
 
 type parameterConstantType = {
   type: number,
@@ -121,14 +119,23 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
   *
   * @return {string}
   */
-const createTLVParam = (parameter: parameterType, tvParams: Array<parameterType> = []) => {
+const createTLVParam = (parameter: parameterType,
+                        subParams: Array<parameterType> = []) => {
   const { parameterConstant: { type: paramType, hasSubParameter }, values } = parameter;
   const resTypeHex = `${fill(4, paramType.toString(16).length)}${paramType.toString(16)}`;
 
   const valuesHex = values ? values.reduce((hex, val) => (hex + val.toString(16)), '') : '';
 
-  const tvParamsHex = (hasSubParameter && tvParams)
-    ? tvParams.reduce((hex, tvParam) => (hex + createTVParam(tvParam)), '') : '';
+  const tvParamsHex = (hasSubParameter && subParams) ? (
+    subParams.reduce((hex, subParam) => {
+      const subParamHex = subParam.tvLength > 0 ? (
+        createTLVParam(subParam)
+      ) : (
+        createTVParam(subParam)
+      );
+      return hex + subParamHex;
+    }, '')
+  ) : '';
 
   // An empty parameter value has length 4 (in octets)
   const paramLength = (calcLength(resTypeHex, valuesHex, tvParamsHex) + 2).toString(16);
@@ -153,56 +160,4 @@ const createTVParam = (tvParam: tvParameterType) => {
 
   const valueHex = values ? values.reduce((hex, val) => (hex + val.toString(16)), '') : '';
   return `${resTypeHex}${valueHex && valueHex}`;
-};
-
-export const addROSpec = () => {
-  console.log('ADD_ROSPEC');
-};
-
-export const enableROSpec = () => {
-  console.log('ENABLE_ROSPEC');
-};
-
-export const startROSpec = () => {
-  console.log('START_ROSPEC');
-};
-
-export const getReaderConfig = () => {
-  const message = createLLRPMessage(
-    0x22,
-    MSG_CONST.GET_READER_CONFIG,
-    [
-      '0000', /* Antenna ID = 0 => All */
-      '00',  /* Requested Data = 0 => All */
-      '0000', /* GPI Port Num = 0 => All */
-      '0000' /* GPO Port Num = 0 => All */
-    ]
-  );
-  return message;
-};
-
-export const setReaderConfig = () => {
-  const message = createLLRPMessage(
-    0x33,
-    MSG_CONST.SET_READER_CONFIG,
-    [
-      '00', /* Reserved */
-      createTLVParam({
-        parameterConstant: PRM_CONST.EventsAndReports,
-        values: [
-          8 /* Set HoldEventsAndReportsUponReconnect = true */
-        ]
-      })
-    ]
-  );
-  return message;
-};
-
-export const enableEventsAndReport = () => {
-  const message = createLLRPMessage(
-    0x44,
-    MSG_CONST.ENABLE_EVENTS_AND_REPORTS,
-    [],
-  );
-  return message;
 };
