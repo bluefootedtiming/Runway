@@ -4,8 +4,21 @@
   * @fileoverview Holds the methods to communicate to an LLRP reader
   */
 
-import * as messageConsants from './LLRPMessageConstants';
-import * as parameterConstatns from './LLRPParameterConstants';
+import { Buffer } from 'buffer';
+import * as MSG_CONST from './LLRPMessageConstants';
+import * as PRM_CONST from './LLRPParameterConstants';
+
+type parameterConstantType = {
+  type: number,
+  hasSubParameter: boolean,
+  tvLength: number,
+  staticLength: number
+};
+
+type parameterType = {
+  parameterConstant: parameterConstantType,
+  values: Array<string | number>
+};
 
 /**
   * fill
@@ -20,9 +33,9 @@ import * as parameterConstatns from './LLRPParameterConstants';
   */
 const fill = (total: number, len: number) => (len < total ? '0'.repeat(total - len) : '');
 
-type MessageOptionsType = {
-  id: number,
-  version: number
+const calcLength = (...args) => {
+  const totalLength = args.reduce((acc, arg) => acc + arg.length, 0);
+  return parseInt(totalLength / 2, 10) + parseInt(totalLength % 2, 10);
 };
 
 /**
@@ -44,7 +57,7 @@ type MessageOptionsType = {
   * - ['04'] => 0000 0100 => Version 1
   * - ['03'] => 0000 0010 => SET_READER_CONFIG: 3
   * - ['00000010'] => ... 0000 0001 0000 0000 => Message length = 64 bits/12 octets
-  * - ['00000000'] => ... => Message ID 
+  * - ['00000000'] => ... => Message ID
   * - ['0000e2000580'] => Message Value which is:
   *   - ['00'] => Reserved
   *   - ['00e2000580'] => 0000 0000 1110 0010 0000 0000 0000 0101 1000 0000
@@ -56,45 +69,27 @@ type MessageOptionsType = {
   *
   * @param {number}         type - Message PropTypes
   * @param {Array<string>}  parameters - A list of LLRPParameter hex strings
-  * @param {MessageOptionsType}
+  * @param {messageOptionsType}
   *
-  * @return {Buffer}
+  * @return {string}
   */
-export const createLLRPMessage = (type: number,
-                                  parameters: Array<string>,
-                                  options: MessageOptionsType = {}) => {
-  // Initialize with ver 1
-  let message = '04';
+export const createLLRPMessage = (id: number, type: number, parameters: Array<string> = []) => {
+  const msgType = type.toString(16);
+  const resTypeHex = `04${fill(2, msgType.length)}${msgType}`;
 
-  // Concat the type
-  const typeHex = type ? type.toString(16) : '';
-  message += `${fill(2, typeHex.length)}${typeHex}`;
+  const msgId = id.toString(16);
+  const idHex = `${fill(8, msgId.length)}${msgId}`;
 
-  // Concat the value length
-  const lengthHex = parameters.length ? (
-    parameters.reduce((total, param) => (param.length + total), 0).toString(16)
-  ) : '';
-  message += `${fill(8, lengthHex.length)}${lengthHex}`;
+  const paramsHex = parameters.reduce((hex, param) => (hex + param), '');
 
-  // Optional Message ID value (the 0s are necessary)
-  const idHex = options.id ? options.id.toString(16) : '';
-  message += `${fill(8, idHex.length)}${idHex}`;
+  // An msg with an empty value has length 10 (in octets)
+  const msgLength = (calcLength(resTypeHex, idHex, paramsHex) + 4).toString(16);
+  const lengthHex = `${fill(8, msgLength.length)}${msgLength}`;
 
-  // Concat any and all params (assuming they are correct)
-  parameters.forEach(param => { message += param; });
-  return Buffer.from(message, 'hex');
-};
+  const msg = `${resTypeHex}${lengthHex}${idHex}${paramsHex}`;
 
-type ParameterType = {
-  type: number,
-  hasSubParameter: boolean,
-  tvLength: number,
-  staticLength: number
-};
-
-type SubParamType = {
-  type: ParameterType,
-  value: number | string
+  console.log(`createLLRPMessage, ${type}: ${msg}`);
+  return Buffer.from(msg, 'hex');
 };
 
 /**
@@ -104,9 +99,8 @@ type SubParamType = {
   *
   * Parameters can either be TLV or TV parameters.
   * TLV parameters can contain TV parameters and TV parameters
-  * cannot. Whether the parameter has a subvalue or not does not
-  * decide whether it is a TLV or TV parameter. We do know if it
-  * is if it has been called from the nested call.
+  * cannot. TLV parameters begin with a 0 in bit 0 and
+  * TV parameters begin with a 1 in bit 0
   *
   * For TLV parameters, the first 1 & 1/2 octets are reserved
   * the next 2 & 1/2 octets are the Parameter type
@@ -117,39 +111,89 @@ type SubParamType = {
   * the next 7 bits are the Parameter type
   * and the remaining bits contain the paramter value
   *
-  * @param {ParameterType}        paramType
+  * @param {parameterType}        paramType
   * @param {string|number}        value
   * @param {Array<SubParamType>}  subParams
   *
   * @return {string}
   */
-export const createLLRPParameter = (paramType: ParameterType,
-                                    value: string | number,
-                                    subParams: Array<SubParamType> = [],
-                                    isSubParam: boolean = false) => {
-  // Add the rest of the resereved octet & type octets
-  let parameter;
-  const typeHex = paramType.type.toString(16);
-  if (isSubParam) {
-    parameter = `${fill(2, typeHex.length)}`;
+const createLLRPParameter = (parameter: parameterType, tvParams: Array<parameterType> = []) => {
+  const { parameterConstant: { type: paramType, hasSubParameter }, values } = parameter;
+  const resTypeHex = `${fill(4, paramType.toString(16).length)}${paramType.toString(16)}`;
 
-    const tvBit = parameter[0].toString(16);
-    if (tvBit < 0x8) parameter[0] = (tvBit + 0x8).toString(16);
-  } else {
-    parameter = `0${fill(3, typeHex.length)}`;
-  }
-  parameter += typeHex;
+  const valuesHex = values ? values.reduce((hex, val) => (hex + val.toString(16)), '') : '';
 
-  // check subParameters
-  let subParamHexStr = '';
-  if (paramType.hasSubParameter && subParams.length) {
-    subParams.forEach(param => {
-      subParamHexStr += createLLRPParameter(param.type, param.value);
-    });
-  }
+  const tvParamsHex = (hasSubParameter && tvParams)
+    ? tvParams.reduce((hex, tvParam) => (hex + createTVParam(tvParam)), '') : '';
 
-  const lengthHex = subParamHexStr.length.toString(16);
-  parameter += `${fill(4, lengthHex.length)}${lengthHex}`;
+  // An empty parameter value has length 4 (in octets)
+  const paramLength = (calcLength(resTypeHex, valuesHex, tvParamsHex) + 2).toString(16);
+  const lengthHex = `${fill(4, paramLength.length)}${paramLength}`;
+  const param = `${resTypeHex}${lengthHex}${valuesHex}${tvParamsHex}`;
+  return paramLength % 2 === 0 ? param : `${param}0`;
+};
 
-  return parameter;
+/**
+  * createTVParam
+  *
+  * Takes a tvParameter which contains a constant and a set of values
+  * and returns a hex respresentation of the parameter.
+  *
+  * @param {tvParameterType} tvParam
+  */
+const createTVParam = (tvParam: tvParameterType) => {
+  const { parameter: { type: paramType }, values } = tvParam;
+  const resTypeHex = `${fill(2, paramType.toString(16).length)}${paramType.toString(16)}`;
+  // In TV Parameters, the first bit must be 1
+  const tvBit = resTypeHex[0].toString(16);
+  if (tvBit < 0x8) resTypeHex[0] = (tvBit + 0x8).toString(16);
+
+  const valueHex = values ? values.reduce((hex, val) => (hex + val.toString(16)), '') : '';
+  return `${resTypeHex}${valueHex && valueHex}`;
+};
+
+export const addROSpec = () => {
+  console.log('ADD_ROSPEC');
+};
+
+export const enableROSpec = () => {
+  console.log('ENABLE_ROSPEC');
+};
+
+export const startROSpec = () => {
+  console.log('START_ROSPEC');
+};
+
+export const getReaderConfig = () => {
+  const message = createLLRPMessage(
+    0x22,
+    MSG_CONST.GET_READER_CONFIG
+  );
+  return message;
+};
+
+export const setReaderConfig = () => {
+  const message = createLLRPMessage(
+    0x33,
+    MSG_CONST.SET_READER_CONFIG,
+    [
+      '00', /* Reserved */
+      createLLRPParameter({
+        parameterConstant: PRM_CONST.EventsAndReports,
+        values: [
+          8 /* Set HoldEventsAndReportsUponReconnect = true */
+        ]
+      })
+    ]
+  );
+  return message;
+};
+
+export const enableEventsAndReport = () => {
+  const message = createLLRPMessage(
+    0x44,
+    MSG_CONST.ENABLE_EVENTS_AND_REPORTS,
+    [],
+  );
+  return message;
 };
