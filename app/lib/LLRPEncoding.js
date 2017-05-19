@@ -129,9 +129,9 @@ const createTLVParam = (parameter: parameterType,
   const tvParamsHex = (hasSubParameter && subParams) ? (
     subParams.reduce((hex, subParam) => {
       const subParamHex = subParam.tvLength > 0 ? (
-        createTLVParam(subParam)
-      ) : (
         createTVParam(subParam)
+      ) : (
+        createTLVParam(subParam)
       );
       return hex + subParamHex;
     }, '')
