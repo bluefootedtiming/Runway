@@ -8,9 +8,9 @@ import { Buffer } from 'buffer';
 
 type parameterConstantType = {
   type: number,
-  hasSubParameter: boolean,
-  tvLength: number,
-  staticLength: number
+  tvLength: number,         // This is the length of the TV parameter
+  staticLength: number,     // This is the length of the TLV parameter
+  hasSubParameter: boolean
 };
 
 type parameterType = {
@@ -96,6 +96,7 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
 
   const msg = `${resTypeHex}${lengthHex}${idHex}${paramsHex}`;
 
+  // Debug
   console.log(`createLLRPMessage, ${type}: ${msg}`);
   return Buffer.from(msg, 'hex');
 };
@@ -119,13 +120,11 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
   *
   * @return {string}
   */
-const createTLVParam = (parameter: parameterType,
-                        subParams: Array<parameterType> = []) => {
+export const createTLVParam = (parameter: parameterType,
+                                subParams: Array<parameterType> = []) => {
   const { parameterConstant: { type: paramType, hasSubParameter }, values } = parameter;
   const resTypeHex = `${fill(4, paramType.toString(16).length)}${paramType.toString(16)}`;
-
   const valuesHex = values ? values.reduce((hex, val) => (hex + val.toString(16)), '') : '';
-
   const tvParamsHex = (hasSubParameter && subParams) ? (
     subParams.reduce((hex, subParam) => {
       const subParamHex = subParam.tvLength > 0 ? (
