@@ -29,7 +29,7 @@ type parameterType = {
   *
   * @return {string}
   */
-const fill = (total: number, len: number) => (len < total ? '0'.repeat(total - len) : '');
+export const fill = (total: number, len: number) => (len < total ? '0'.repeat(total - len) : '');
 
 /**
   * calcLength
@@ -98,7 +98,7 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
 
   // Debug
   console.log(`createLLRPMessage, ${type}: ${msg}`);
-  return Buffer.from(msg, 'hex');
+  return Buffer.from(msg.length % 2 === 0 ? msg : `${msg}0`, 'hex');
 };
 
 /**
@@ -136,8 +136,7 @@ export const createTLVParam = (parameter: parameterType) => {
   // An empty parameter value has length 4 (in octets)
   const paramLength = (calcLength(resTypeHex, valuesHex) + 2).toString(16);
   const lengthHex = `${fill(4, paramLength.length)}${paramLength}`;
-  const param = `${resTypeHex}${lengthHex}${valuesHex}`;
-  return paramLength % 2 === 0 ? param : `${param}0`;
+  return `${resTypeHex}${lengthHex}${valuesHex}`;
 };
 
 /**
