@@ -28,23 +28,23 @@ export const addROSpec = () => {
   const aiSpec = {
     parameterConstant: PRM_CONST.AISpec,
     values: [
-      '', /* AntennaCount */
-      '', /* AntennaID#[1-n]*/
+      '0000', /* AntennaCount */
+      '0000', /* AntennaID#[1-n], if 0, use all*/
       {/* AISpecStopTrigger */
         parameterConstant: PRM_CONST.AISpecStopTrigger,
         values: [
-          '', /* AISpecStopTriggerType */
-          '', /* DurationTrigger */
-          '', /* GPITriggerValue */
+          '03', /* AISpecStopTriggerType = 3 => TagObservationTrigger*/
+          '0'.repeat(8), /* DurationTrigger, not used */
+          '0'.repeat(10), /* GPITriggerValue, not used */
           {/* TagObservationTrigger */
             parameterConstant: PRM_CONST.TagObservationTrigger,
             values: [
-              '',   /* TriggerType */
+              '00',   /* TriggerType = 0 => Upon seeing N(1) tag observations*/
               '00', /* Reserved */
-              '',   /* NumberOfTags */
-              '',   /* NumberOfAttempts */
-              '',   /* T (time?) */
-              '',   /* Timeout */
+              '0001',   /* NumberOfTags = 1 */
+              '0000',   /* NumberOfAttempts, not used but needs to be filled */
+              '0000',   /* T (time?), not used but needs to be filled */
+              '0'.repeat(8),   /* Timeout = 0 */
             ]
           }
         ]
@@ -52,8 +52,8 @@ export const addROSpec = () => {
       {/* InventoryParameterSpec */
         parameterConstant: PRM_CONST.InventoryParameterSpec,
         values: [
-          '', /* InventoryParameterSpecID */
-          '', /* ProtocolID */
+          '0001', /* InventoryParameterSpecID */
+          '01', /* ProtocolID */
           '', /* AntennaConfiguration Parameter, optional */
           ''  /* Custom Parameter, optional */
         ]
@@ -64,26 +64,45 @@ export const addROSpec = () => {
   const roReportSpec = {
     parameterConstant: PRM_CONST.ROReportSpec,
     values: [
-      '', /* ROReportTrigger */
-      '', /* N (not sure) */
-      {/* TagReportContentSelector */
+      '01', /* ROReportTrigger = 1 => Upon N TagReportData Parameters or End of AISpec */
+      '0000', /* N = 0 (unlimited) */
+      {/* ReportContents = TagReportContentSelector */
         parameterConstant: PRM_CONST.TagReportContentSelector,
         values: [
-          [0, 0, 0, 0, 0, 0, 0, 0].join('').toString(16), /* RIPACRFLT */
-          /**
-            * R – EnableROSpecID
-            * I – EnableSpecIndex
-            * P – EnableInventoryParameterSpecID
-            * A – EnableAntennaID
-            * C – EnableChannelIndex
-            * R – EnablePeakRSSI
-            * F – EnableFirstSeenTimestamp
-            * L – EnableLastSeenTimestamp
-            * T – EnableTagSeenCount
-            *
-            */
+          `${[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].join('')}0`.toString(16),
+        /* R  I  P  A  C  R  F  L  T [reserved...] */
+        /**
+          * R – EnableROSpecID
+          * I – EnableSpecIndex
+          * P – EnableInventoryParameterSpecID
+          * A – EnableAntennaID
+          * C – EnableChannelIndex
+          * R – EnablePeakRSSI
+          * F – EnableFirstSeenTimestamp
+          * L – EnableLastSeenTimestamp
+          * T – EnableTagSeenCount
+          */
+          '0'.repeat(12), /* AirProtocolSpecificEPCMemorySelectorParameter, not using */
+          {/* TagReportData Parameter */
+            parameterConstant: PRM_CONST.TagReportData,
+            values: [
+              {/* EPCData Parameter */
+                parameterConstant: PRM_CONST.EPCData,
+                values: [
+                  '0000', /* EPCLengthBits */
+                ]
+              }
+            ]
+          }
         ]
       }
+    ]
+  };
+
+  const loopSpec = {
+    parameterConstant: PRM_CONST.LoopSpec,
+    values: [
+      '0'.repeat(8), /* LoopCount */
     ]
   };
 
@@ -94,12 +113,12 @@ export const addROSpec = () => {
       '0000', /* ROSpecID */
       '8',    /* Priority */
       '0',    /* CurrentState */
+      roBoundarySpec,
+      aiSpec,
+      roReportSpec,
+      loopSpec
     ]
-  }, [
-    roBoundarySpec,
-    aiSpec,
-    roReportSpec
-  ]);
+  });
 
   // Define Message
   const message = createLLRPMessage(
