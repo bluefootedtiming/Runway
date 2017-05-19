@@ -39,6 +39,7 @@ export const TagObservationTrigger = { type: 185, hasSubParameter: false, tvLeng
 export const InventoryParameterSpec = { type: 186, hasSubParameter: true, tvLength: 0, staticLength: 7 };
 export const RFSurveySpec = { type: 187, hasSubParameter: true, tvLength: 0, staticLength: 14 };
 export const RFSurveySpecStopTrigger = { type: 188, hasSubParameter: false, tvLength: 0, staticLength: 13 };
+export const LoopSpec = { type: 355, hasSubParameter: false, tvLength: 0, staticLength: 32 };
 // Access Operation Parameters
 export const AccessSpec = { type: 207, hasSubParameter: true, tvLength: 0, staticLength: 16 };
 export const AccessSpecStopTrigger = { type: 208, hasSubParameter: false, tvLength: 0, staticLength: 8 };
