@@ -7,7 +7,7 @@
 import { Buffer } from 'buffer';
 
 type parameterConstantType = {
-  type: number,
+  id: number,
   tvLength: number,         // This is the length of the TV parameter
   staticLength: number,     // This is the length of the TLV parameter
   hasSubParameter: boolean
@@ -121,8 +121,8 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
   * @return {string}
   */
 export const createTLVParam = (parameter: parameterType) => {
-  const { parameterConstant: { type: paramType }, values } = parameter;
-  const resTypeHex = `${fill(4, paramType.toString(16).length)}${paramType.toString(16)}`;
+  const { parameterConstant: { id }, values } = parameter;
+  const resTypeHex = `${fill(4, id.toString(16).length)}${id.toString(16)}`;
   const valuesHex = values ? values.reduce((hex, value) => {
     if (typeof value === 'string') return hex + value;
     const valueHex = value.parameterConstant.tvLength === 0 ? (
@@ -149,8 +149,8 @@ export const createTLVParam = (parameter: parameterType) => {
   * @return {string}
   */
 const createTVParam = (parameter: parameterType) => {
-  const { parameterConstant: { type: paramType }, values } = parameter;
-  const resTypeHex = `${fill(2, paramType.toString(16).length)}${paramType.toString(16)}`;
+  const { parameterConstant: { id }, values } = parameter;
+  const resTypeHex = `${fill(2, id.toString(16).length)}${id.toString(16)}`;
   // In TV Parameters, the first bit must be 1
   const tvBit = resTypeHex[0].toString(16);
   if (tvBit < 0x8) resTypeHex[0] = (tvBit + 0x8).toString(16);
