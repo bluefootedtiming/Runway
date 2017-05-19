@@ -8,6 +8,8 @@
   * Edited by Oak.Works
   */
 
+/* eslint-disable max-len*/
+
 // General Parameters
 export const UTCTimeStamp = { type: 128, hasSubParameter: false, tvLength: 0, staticLength: 12 };
 export const Uptime = { type: 129, hasSubParameter: false, tvLength: 0, staticLength: 12 };
