@@ -1,6 +1,26 @@
 import * as MSG_CONST from './LLRPMessageConstants';
 import * as PRM_CONST from './LLRPParameterConstants';
-import { createLLRPMessage, createTLVParam } from './LLRPEncoding';
+import { createLLRPMessage, createTLVParam, fill } from './LLRPEncoding';
+
+/**
+  * binToHex
+  *
+  * Take an array of binary numbers and converts to hex.
+  * The length must be evenly divisble by 4 (4 bits = 1 hex)
+  *
+  * @param {Array<number>} bin
+  *
+  * @return {string}
+  */
+const binToHex = (bin: Array<number>) => (bin.length % 4 === 0 && parseInt(bin.join(''), 2).toString(16));
+
+const HEX_CONST = {
+  OCTET: '00',
+  TWO_OCTETS: '00'.repeat(2),
+  FOUR_OCTETS: '00'.repeat(4)
+};
+
+const ROSPEC_ID = '00000099';
 
 export const addROSpec = () => {
   const roBoundarySpec = {
@@ -9,17 +29,17 @@ export const addROSpec = () => {
       {/* ROSpecStartTrigger */
         parameterConstant: PRM_CONST.ROSpecStartTrigger,
         values: [
-          '01', /* ROSpecStartTriggerType = 1 => Immediate */
-          '',   /* PeriodicTriggerValue, optional/not necessary */
-          '',   /* GPITriggerValue, optional/not necessary */
+          HEX_CONST.OCTET,    /* ROSpecStartTriggerType = 0 => null */
+          // '',   /* PeriodicTriggerValue, optional/not necessary */
+          // '',   /* GPITriggerValue, optional/not necessary */
         ]
       },
       {/* ROSpecStopTrigger */
         parameterConstant: PRM_CONST.ROSpecStopTrigger,
         values: [
-          '00', /* ROSpecStopTriggerType = 0 => null (? may need to change to Dur) */
-          '',   /* DurationTriggerValue, optional/not necessary */
-          '',   /* GPITriggerValue, optional/not necessary */
+          HEX_CONST.OCTET,   /* ROSpecStopTriggerType = 0 => null (? may need to change to Dur) */
+          HEX_CONST.FOUR_OCTETS,   /* DurationTriggerValue, optional/not necessary */
+          // '',   /* GPITriggerValue, optional/not necessary */
         ]
       }
     ]
@@ -28,32 +48,20 @@ export const addROSpec = () => {
   const aiSpec = {
     parameterConstant: PRM_CONST.AISpec,
     values: [
-      '0000', /* AntennaCount */
-      '0000', /* AntennaID#[1-n], if 0, use all*/
+      '0001', /* AntennaCount */
+      HEX_CONST.TWO_OCTETS, /* AntennaID#[1-n], if 0, use all*/
       {/* AISpecStopTrigger */
         parameterConstant: PRM_CONST.AISpecStopTrigger,
         values: [
-          '03', /* AISpecStopTriggerType = 3 => TagObservationTrigger*/
-          '0'.repeat(8), /* DurationTrigger, not used */
-          '0'.repeat(10), /* GPITriggerValue, not used */
-          {/* TagObservationTrigger */
-            parameterConstant: PRM_CONST.TagObservationTrigger,
-            values: [
-              '00',   /* TriggerType = 0 => Upon seeing N(1) tag observations*/
-              '00', /* Reserved */
-              '0001',   /* NumberOfTags = 1 */
-              '0000',   /* NumberOfAttempts, not used but needs to be filled */
-              '0000',   /* T (time?), not used but needs to be filled */
-              '0'.repeat(8),   /* Timeout = 0 */
-            ]
-          }
+          '01', /* AISpecStopTriggerType = 1 => TagObservationTrigger*/
+          `${fill(8, '3e8'.length)}3e8`, /* DurationTrigger, not used */
         ]
       },
       {/* InventoryParameterSpec */
         parameterConstant: PRM_CONST.InventoryParameterSpec,
         values: [
           '0001', /* InventoryParameterSpecID */
-          '01', /* ProtocolID */
+          '01',   /* ProtocolID */
           '', /* AntennaConfiguration Parameter, optional */
           ''  /* Custom Parameter, optional */
         ]
@@ -65,13 +73,14 @@ export const addROSpec = () => {
     parameterConstant: PRM_CONST.ROReportSpec,
     values: [
       '01', /* ROReportTrigger = 1 => Upon N TagReportData Parameters or End of AISpec */
-      '0000', /* N = 0 (unlimited) */
+      HEX_CONST.TWO_OCTETS, /* N = 0 (unlimited) */
       {/* ReportContents = TagReportContentSelector */
         parameterConstant: PRM_CONST.TagReportContentSelector,
         values: [
-          `${[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].join('')}0`.toString(16),
-        /* R  I  P  A  C  R  F  L  T [reserved...] */
+          `${binToHex([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0])}0`,
         /**
+          * R  I  P  A  C  R  F  L  T  S [reserved...]
+          *
           * R – EnableROSpecID
           * I – EnableSpecIndex
           * P – EnableInventoryParameterSpecID
@@ -82,16 +91,17 @@ export const addROSpec = () => {
           * L – EnableLastSeenTimestamp
           * T – EnableTagSeenCount
           */
-          '0'.repeat(12), /* AirProtocolSpecificEPCMemorySelectorParameter, not using */
-          {/* TagReportData Parameter */
-            parameterConstant: PRM_CONST.TagReportData,
+          {/* C1G2EPCMemorySelector Parameter */
+            parameterConstant: PRM_CONST.C1G2EPCMemorySelector,
             values: [
-              {/* EPCData Parameter */
-                parameterConstant: PRM_CONST.EPCData,
-                values: [
-                  '0000', /* EPCLengthBits */
-                ]
-              }
+              `${binToHex([1, 1, 0, 0])}0`
+              /**
+                * C  P  X [Reserved]
+                *
+                * C – EnableCRC
+                * P – EnablePCBits
+                * X – EnableXPCBits
+                */
             ]
           }
         ]
@@ -99,24 +109,16 @@ export const addROSpec = () => {
     ]
   };
 
-  const loopSpec = {
-    parameterConstant: PRM_CONST.LoopSpec,
-    values: [
-      '0'.repeat(8), /* LoopCount */
-    ]
-  };
-
   // Defining the ROSpec
   const roSpec = createTLVParam({
     parameterConstant: PRM_CONST.ROSpec,
     values: [
-      '0000', /* ROSpecID */
-      '8',    /* Priority */
-      '0',    /* CurrentState */
+      ROSPEC_ID,  /* ROSpecID */
+      HEX_CONST.OCTET,        /* Priority */
+      HEX_CONST.OCTET,        /* CurrentState */
       roBoundarySpec,
       aiSpec,
-      roReportSpec,
-      loopSpec
+      roReportSpec
     ]
   });
 
@@ -131,16 +133,28 @@ export const addROSpec = () => {
   return message;
 };
 
-export const enableROSpec = () => {
-  console.log('ENABLE_ROSPEC');
-};
+export const enableROSpec = () => (
+  createLLRPMessage(
+    0x66,
+    MSG_CONST.ENABLE_ROSPEC,
+    [
+      ROSPEC_ID
+    ]
+  )
+);
 
-export const startROSpec = () => {
-  console.log('START_ROSPEC');
-};
+export const startROSpec = () => (
+  createLLRPMessage(
+    0x77,
+    MSG_CONST.START_ROSPEC,
+    [
+      ROSPEC_ID
+    ]
+  )
+);
 
-export const getReaderConfig = () => {
-  const message = createLLRPMessage(
+export const getReaderConfig = () => (
+  createLLRPMessage(
     0x22,
     MSG_CONST.GET_READER_CONFIG,
     [
@@ -149,12 +163,11 @@ export const getReaderConfig = () => {
       '0000', /* GPI Port Num = 0 => All */
       '0000'  /* GPO Port Num = 0 => All */
     ]
-  );
-  return message;
-};
+  )
+);
 
-export const setReaderConfig = () => {
-  const message = createLLRPMessage(
+export const setReaderConfig = () => (
+  createLLRPMessage(
     0x33,
     MSG_CONST.SET_READER_CONFIG,
     [
@@ -166,15 +179,13 @@ export const setReaderConfig = () => {
         ]
       })
     ]
-  );
-  return message;
-};
+  )
+);
 
-export const enableEventsAndReport = () => {
-  const message = createLLRPMessage(
+export const enableEventsAndReport = () => (
+  createLLRPMessage(
     0x44,
     MSG_CONST.ENABLE_EVENTS_AND_REPORTS,
     [],
-  );
-  return message;
-};
+  )
+);
