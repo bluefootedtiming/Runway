@@ -149,15 +149,17 @@ const createTLVParam = (parameter: parameterType,
   *
   * Takes a TV-encoded Parameter and returns a hex string of the parameter.
   *
-  * @param {tvParameterType} tvParam
+  * @param {parameterType} parameter
+  *
+  * @return {string}
   */
-const createTVParam = (tvParam: tvParameterType) => {
-  const { parameter: { type: paramType }, values } = tvParam;
+const createTVParam = (parameter: parameterType) => {
+  const { parameterConstant: { type: paramType }, values } = parameter;
   const resTypeHex = `${fill(2, paramType.toString(16).length)}${paramType.toString(16)}`;
   // In TV Parameters, the first bit must be 1
   const tvBit = resTypeHex[0].toString(16);
   if (tvBit < 0x8) resTypeHex[0] = (tvBit + 0x8).toString(16);
 
   const valueHex = values ? values.reduce((hex, val) => (hex + val.toString(16)), '') : '';
-  return `${resTypeHex}${valueHex && valueHex}`;
+  return `${resTypeHex}${valueHex}`;
 };
