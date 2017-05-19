@@ -1,6 +1,6 @@
-import * as MSG_CONST from './LLRPMessageConstants';
-import * as PRM_CONST from './LLRPParameterConstants';
-import { createLLRPMessage, createTLVParam, fill } from './LLRPEncoding';
+import * as MSG_CONST from './messageConstants';
+import * as PRM_CONST from './parameterConstants';
+import { createLLRPMessage, createTLVParam, fill } from './encode';
 
 /**
   * binToHex
