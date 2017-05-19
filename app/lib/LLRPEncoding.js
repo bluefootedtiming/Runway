@@ -97,7 +97,7 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
   const msg = `${resTypeHex}${lengthHex}${idHex}${paramsHex}`;
 
   console.log(`createLLRPMessage, ${type}: ${msg}`);
-  return Buffer.from(msg.length % 2 === 0 ? msg : `${msg}0`, 'hex');
+  return Buffer.from(msg, 'hex');
 };
 
 /**
