@@ -15,7 +15,7 @@ type parameterConstantType = {
 
 type parameterType = {
   parameterConstant: parameterConstantType,
-  values: Array<string | number>
+  values: Array<string | number | parameterType>
 };
 
 /**
@@ -120,26 +120,23 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
   *
   * @return {string}
   */
-export const createTLVParam = (parameter: parameterType,
-                                subParams: Array<parameterType> = []) => {
-  const { parameterConstant: { type: paramType, hasSubParameter }, values } = parameter;
+export const createTLVParam = (parameter: parameterType) => {
+  const { parameterConstant: { type: paramType }, values } = parameter;
   const resTypeHex = `${fill(4, paramType.toString(16).length)}${paramType.toString(16)}`;
-  const valuesHex = values ? values.reduce((hex, val) => (hex + val.toString(16)), '') : '';
-  const tvParamsHex = (hasSubParameter && subParams) ? (
-    subParams.reduce((hex, subParam) => {
-      const subParamHex = subParam.tvLength > 0 ? (
-        createTVParam(subParam)
-      ) : (
-        createTLVParam(subParam)
-      );
-      return hex + subParamHex;
-    }, '')
-  ) : '';
+  const valuesHex = values ? values.reduce((hex, value) => {
+    if (typeof value === 'string') return hex + value;
+    const valueHex = value.parameterConstant.tvLength === 0 ? (
+      createTLVParam(value)
+    ) : (
+      createTVParam(value)
+    );
+    return hex + valueHex;
+  }, '') : '';
 
   // An empty parameter value has length 4 (in octets)
-  const paramLength = (calcLength(resTypeHex, valuesHex, tvParamsHex) + 2).toString(16);
+  const paramLength = (calcLength(resTypeHex, valuesHex) + 2).toString(16);
   const lengthHex = `${fill(4, paramLength.length)}${paramLength}`;
-  const param = `${resTypeHex}${lengthHex}${valuesHex}${tvParamsHex}`;
+  const param = `${resTypeHex}${lengthHex}${valuesHex}`;
   return paramLength % 2 === 0 ? param : `${param}0`;
 };
 
