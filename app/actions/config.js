@@ -9,7 +9,13 @@ export const DEL_READER = 'DEL_READER';
 export const ADD_EVENT = 'ADD_EVENT';
 export const DEL_EVENT = 'DEL_EVENT';
 
-export type readerType = { address: string, event: string };
+export type readerType = {
+  id?: string,
+  address: string,
+  event: string,
+  port?: string,
+  isLLRP?: boolean
+};
 export type readerMapType = Array<readerType>;
 export type eventsType = Array<?string>;
 export type configurationsType = {
