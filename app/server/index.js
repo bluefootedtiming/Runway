@@ -218,7 +218,8 @@ export default class RfidRelay {
     const elapsed = moment.duration(moment.now() - startTime);
     const newData = readerDataArray.slice();
 
-    if (readerMap[readerAddress]) newData[3] = readerMap[readerAddress];
+    const index = readerMap.find(({ address }) => address === readerAddress);
+    if (index >= 0 && readerMap[index]) newData[3] = readerMap[index].event;
     newData[2] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
     newData[1] = parseInt(readerDataArray[1], 10);
     return newData;
