@@ -50,6 +50,7 @@ export const binToHex = (bin: Array<number>) => (bin.length % 4 === 0 && parseIn
 // Reminder: 1 octet = 4 hex digits = 8 bits
 
 const initProp = (value: string | Array<number> | null, base: string, length: number) => {
+  if (!value) return { value: '', length };
   const hexLength = length / 4;
   switch (base) {
     case 'hex':
