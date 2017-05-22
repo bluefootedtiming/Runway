@@ -87,8 +87,9 @@ class Configuration extends Component {
 
   handleAddReader = () => {
     if (this.state.readerMap.findIndex(({ address }) => address === '') < 0) {
+      const randomId = `${(Math.floor(Math.random() * (255 - 16)) + 16).toString(16)}`;
       this.setState({
-        readerMap: [{ address: '', event: '', isLLRP: true }, ...this.state.readerMap]
+        readerMap: [{ id: randomId, address: '', event: '', isLLRP: true }, ...this.state.readerMap]
       });
     }
   }
