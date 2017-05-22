@@ -47,6 +47,7 @@ export const binToHex = (bin: Array<number>) => (bin.length % 4 === 0 && parseIn
 // =====================
 //  Defining Properties
 // =====================
+// Reminder: 1 octet = 4 hex digits = 8 bits
 
 const initProp = (value: string | Array<number> | null, base: string, length: number) => {
   const hexLength = length / 4;
@@ -156,17 +157,17 @@ export const C1G2EPCMemorySelectorValue = (value) => ({
 
 export const GPIPortNumber = (value) => ({
   name: 'GPIPortNumber',
-  ...initProp(value, 'hex', 8)
+  ...initProp(value, 'hex', 16)
 });
 
 export const GPOPortNumber = (value) => ({
   name: 'GPOPortNumber',
-  ...initProp(value, 'hex', 8)
+  ...initProp(value, 'hex', 16)
 });
 
 export const RequestedData = (value) => ({
   name: 'RequestedData',
-  ...initProp(value, 'hex', 4)
+  ...initProp(value, 'hex', 8)
 });
 
 export const EventsAndReports = (value) => ({

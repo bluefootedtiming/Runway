@@ -1,5 +1,6 @@
 import * as constants from './messageConstants';
 import * as parameters from './parameters';
+import * as properties from './properties';
 import { createLLRPMessage } from './encode';
 
 export const addROSpec = () => (
@@ -52,7 +53,7 @@ export const enableROSpec = () => (
     id: 0x66,
     type: constants.ENABLE_ROSPEC,
     args: [
-      parameters.ROSpecID('1')
+      properties.ROSpecID('1')
     ]
   })
 );
@@ -62,7 +63,7 @@ export const startROSpec = () => (
     id: 0x77,
     type: constants.START_ROSPEC,
     args: [
-      parameters.ROSpecID('1')
+      properties.ROSpecID('1')
     ]
   })
 );
@@ -72,10 +73,10 @@ export const getReaderConfig = () => (
     id: 0x88,
     type: constants.GET_READER_CONFIG,
     args: [
-      parameters.AntennaID('0'),
-      parameters.RequestedData('0'),
-      parameters.GPIPortNumber('0'),
-      parameters.GPOPortNumber('0')
+      properties.AntennaID('0'),
+      properties.RequestedData('0'),
+      properties.GPIPortNumber('0'),
+      properties.GPOPortNumber('0')
     ]
   })
 );
@@ -85,8 +86,8 @@ export const setReaderConfig = () => (
     id: 0x99,
     type: constants.SET_READER_CONFIG,
     args: [
-      parameters.Reserved(4),
-      parameters.EventsAndReports('8')
+      properties.Reserved(4),
+      properties.EventsAndReports('8')
     ]
   })
 );

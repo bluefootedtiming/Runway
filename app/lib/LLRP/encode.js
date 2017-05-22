@@ -43,20 +43,15 @@ export const createLLRPMessage = ({ id, type, args = [] }) => {
   const resTypeHex = `04${hexFill(2, type)}`;
   const idHex = hexFill(8, id);
   const paramsHex = args.reduce((hex, arg) => {
-    const argHex = typeof arg !== 'string' ? (
-      createTLVParam(arg)
-    ) : arg;
-    console.log(arg, argHex);
-    return hex + argHex;
+    if (typeof arg === 'string') { return hex + arg; }
+    if (arg.value) { return hex + arg.value; }
+    return hex + createTLVParam(arg);
   }, '');
 
   // An msg with an empty value has length 10 (in octets)
   const msgLength = (calcLength(resTypeHex, idHex, paramsHex) + 4);
   const lengthHex = hexFill(8, msgLength);
-
   const msg = `${resTypeHex}${lengthHex}${idHex}${paramsHex}`;
-  // Debug
-  console.log(`createLLRPMessage, ${type}: ${msg}`);
   return Buffer.from(msg.length % 2 === 0 ? msg : `${msg}0`, 'hex');
 };
 
