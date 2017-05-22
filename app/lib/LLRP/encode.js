@@ -1,23 +1,11 @@
 /**
-  * LLRPEncoding.js
+  * encode.js
   *
   * @fileoverview Holds the methods to encode messages for an LLRP reader
   */
 
 import { Buffer } from 'buffer';
-
-type parameterConstantType = {
-  id: number,
-  tvLength: number,         // This is the length of the TV parameter
-  staticLength: number,     // This is the length of the TLV parameter
-  hasSubParameter: boolean
-};
-
-type parameterType = {
-  type: parameterConstantType,
-  values: Array<string | number | parameterType>
-};
-
+import { parameterType } from './parameters';
 /**
   * fill
   *
@@ -35,6 +23,40 @@ export const fill = (total: number, val: string | number) => {
 };
 
 /**
+  * fillAndConcat
+  *
+  * Similar to fill except it appends the val to the end
+  *
+  * @param {number} total
+  * @param {string} val
+  *
+  * @return {string}
+  */
+export const fillAndConcat = (total: number, val: string) => (
+  val.length ? (
+    `${fill(total, val.toString())}${val}`
+  ) : (
+    fill(total, val)
+  )
+);
+
+const hexFill = (total: number, val: string | number) => (
+  fillAndConcat(total, val.toString(16))
+);
+
+/**
+  * binToHex
+  *
+  * Take an array of binary numbers and converts to hex.
+  * The length must be evenly divisble by 4 (4 bits = 1 hex)
+  *
+  * @param {Array<number>} bin
+  *
+  * @return {string}
+  */
+export const binToHex = (bin: Array<number>) => (bin.length % 4 === 0 && parseInt(bin.join(''), 2).toString(16));
+
+/**
   * calcLength
   *
   * Calculate the number of octets out of hex strings.
@@ -49,49 +71,59 @@ const calcLength = (...args) => {
   return parseInt(totalLength / 2, 10) + parseInt(totalLength % 2, 10);
 };
 
+
+// On message creation... This needs to be in the readme.
+//
+// Simply, first octet describe the reserved and version,
+// next octet describe the message type,
+// next 4 octets describe the message length (length of the message value, i.e. all parameters),
+// next 4 octets describe the message ID (this can be left blank unless specifed),
+// and the next variable amount of octets (described by the message length) describes
+// the message value
+//
+// For example, the following is a hex string for: SET_READER_CONFIG:
+// 040300000010000000000000e2000580
+//
+// - ['04'] => 0000 0100 => Version 1
+// - ['03'] => 0000 0010 => SET_READER_CONFIG: 3
+// - ['00000010'] => ... 0001 0000 => Message length => 16 octets
+// - ['00000000'] => ... => Message ID
+// - ['0000e2000580'] => Message Value which is:
+//   - ['00'] => Reserved
+//   - ['00e2000580'] => 0000 0000 1110 0010 0000 0000 0000 0101 1000 0000
+//   -                 => The ReaderEventNotificationSpecParameter which is:
+//     - ['00e2'] => This is the reserved bits and the type (226) EventsAndReports
+//     - ['0005'] => Length => 5 octets
+//     - ['8'] => HoldEventsAndReportsUponReconnect = true
+//
+
+
 /**
   * createLLRPMessage
   *
   * Takes a message type and a list of parameters to create a hex string
   * that can be placed into a buffer and written to an LLRP server.
   *
-  * Simply, first octet describe the reserved and version,
-  * next octet describe the message type,
-  * next 4 octets describe the message length (length of the message value, i.e. all parameters),
-  * next 4 octets describe the message ID (this can be left blank unless specifed),
-  * and the next variable amount of octets (described by the message length) describes
-  * the message value
-  *
-  * For example, the following is a hex string for: SET_READER_CONFIG:
-  * 040300000010000000000000e2000580
-  *
-  * - ['04'] => 0000 0100 => Version 1
-  * - ['03'] => 0000 0010 => SET_READER_CONFIG: 3
-  * - ['00000010'] => ... 0001 0000 => Message length => 16 octets
-  * - ['00000000'] => ... => Message ID
-  * - ['0000e2000580'] => Message Value which is:
-  *   - ['00'] => Reserved
-  *   - ['00e2000580'] => 0000 0000 1110 0010 0000 0000 0000 0101 1000 0000
-  *   -                 => The ReaderEventNotificationSpecParameter which is:
-  *     - ['00e2'] => This is the reserved bits and the type (226) EventsAndReports
-  *     - ['0005'] => Length => 5 octets
-  *     - ['8'] => HoldEventsAndReportsUponReconnect = true
-  *
-  *
   * @param {number}         id   - Message ID in Hex
   * @param {number}         type - Message PropTypes
-  * @param {Array<string>}  parameters - A list of LLRPParameter hex strings
+  * @param {Array<string|parameterType>}  parameters - A list of LLRPParameter hex strings
   *
   * @return {Buffer}
   */
-export const createLLRPMessage = (id: number, type: number, parameters: Array<string> = []) => {
-  const resTypeHex = `04${fill(2, type.toString(16))}${type.toString(16)}`;
-  const idHex = `${fill(8, id.toString(16))}${id.toString(16)}`;
-  const paramsHex = parameters.reduce((hex, param) => (hex + param), '');
+export const createLLRPMessage = ({ id, type, args = [] }) => {
+  const resTypeHex = `04${hexFill(2, type)}`;
+  const idHex = hexFill(8, id);
+  const paramsHex = args.reduce((hex, arg) => {
+    const argHex = typeof arg !== 'string' ? (
+      createTLVParam(arg)
+    ) : arg;
+    console.log(arg, argHex);
+    return hex + argHex;
+  }, '');
 
   // An msg with an empty value has length 10 (in octets)
-  const msgLength = (calcLength(resTypeHex, idHex, paramsHex) + 4).toString(16);
-  const lengthHex = `${fill(8, msgLength)}${msgLength}`;
+  const msgLength = (calcLength(resTypeHex, idHex, paramsHex) + 4);
+  const lengthHex = hexFill(8, msgLength);
 
   const msg = `${resTypeHex}${lengthHex}${idHex}${paramsHex}`;
   // Debug
@@ -114,26 +146,20 @@ export const createLLRPMessage = (id: number, type: number, parameters: Array<st
   * and the remaining bits contain the paramter value
   *
   * @param {parameterType}        parameter
-  * @param {Array<parameterType>}  tvParams
   *
   * @return {string}
   */
 export const createTLVParam = (parameter: parameterType) => {
-  const { type: { id }, values } = parameter;
-  const resTypeHex = `${fill(4, id.toString(16))}${id.toString(16)}`;
-  const valuesHex = values ? values.reduce((hex, value) => {
-    if (typeof value === 'string') return hex + value;
-    const valueHex = value.parameterConstant.tvLength === 0 ? (
-      createTLVParam(value)
-    ) : (
-      createTVParam(value)
-    );
-    return hex + valueHex;
+  const { type: { id }, args } = parameter;
+  const resTypeHex = hexFill(4, id);
+  const valuesHex = args ? args.filter(x => x).reduce((hex, arg) => {
+    if (arg.type) return hex + (arg.type.tvLength === 0 ? createTLVParam(arg) : createTVParam(arg));
+    return hex + arg.value;
   }, '') : '';
 
   // An empty parameter value has length 4 (in octets)
-  const paramLength = (calcLength(resTypeHex, valuesHex) + 2).toString(16);
-  const lengthHex = `${fill(4, paramLength)}${paramLength}`;
+  const paramLength = (calcLength(resTypeHex, valuesHex) + 2);
+  const lengthHex = hexFill(4, paramLength);
   return `${resTypeHex}${lengthHex}${valuesHex}`;
 };
 
@@ -148,7 +174,7 @@ export const createTLVParam = (parameter: parameterType) => {
   */
 const createTVParam = (parameter: parameterType) => {
   const { type: { id }, values } = parameter;
-  const resTypeHex = `${fill(2, id.toString(16))}${id.toString(16)}`;
+  const resTypeHex = hexFill(2, id);
   // In TV Parameters, the first bit must be 1
   const tvBit = resTypeHex[0].toString(16);
   if (tvBit < 0x8) resTypeHex[0] = (tvBit + 0x8).toString(16);
