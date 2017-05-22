@@ -1,10 +1,48 @@
-import { fillAndConcat, binToHex } from './encode';
-
-type propertyType = {
-  name?: string,
-  value: string | Array<number>, // Hex or Bit Array
-  length: number // Length of the entire prop in bits
+/**
+  * fill
+  *
+  * Given the desired length and the actual length of the string,
+  * return either string filled with total - len zeroes, or empty string
+  *
+  * @param {number} total
+  * @param {string|number} val
+  *
+  * @return {string}
+  */
+export const fill = (total: number, val: string | number) => {
+  const valHexLen = (typeof val === 'number') ? val : val.length;
+  return valHexLen < total ? '0'.repeat(total - valHexLen) : '';
 };
+
+/**
+  * fillAndConcat
+  *
+  * Similar to fill except it appends the val to the end
+  *
+  * @param {number} total
+  * @param {string} val
+  *
+  * @return {string}
+  */
+export const fillAndConcat = (total: number, val: string) => (
+  val.length ? (
+    `${fill(total, val.toString())}${val}`
+  ) : (
+    fill(total, val)
+  )
+);
+
+/**
+  * binToHex
+  *
+  * Take an array of binary numbers and converts to hex.
+  * The length must be evenly divisble by 4 (4 bits = 1 hex)
+  *
+  * @param {Array<number>} bin
+  *
+  * @return {string}
+  */
+export const binToHex = (bin: Array<number>) => (bin.length % 4 === 0 && parseInt(bin.join(''), 2).toString(16));
 
 // =====================
 //  Defining Properties
@@ -30,12 +68,12 @@ const initProp = (value: string | Array<number> | null, base: string, length: nu
 };
 
 /**
- * Reserved
- *
- * Used for any reserved bits inside of a parameter
- *
- * @param {number} length
- */
+  * Reserved
+  *
+  * Used for any reserved bits inside of a parameter
+  *
+  * @param {number} length
+  */
 export const Reserved = (length) => ({
   name: 'Reserved',
   ...initProp('0', 'hex', length)

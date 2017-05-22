@@ -5,56 +5,12 @@
   */
 
 import { Buffer } from 'buffer';
+import { fillAndConcat } from './properties';
 import { parameterType } from './parameters';
-/**
-  * fill
-  *
-  * Given the desired length and the actual length of the string,
-  * return either string filled with total - len zeroes, or empty string
-  *
-  * @param {number} total
-  * @param {string|number} val
-  *
-  * @return {string}
-  */
-export const fill = (total: number, val: string | number) => {
-  const valHexLen = (typeof val === 'number') ? val : val.length;
-  return valHexLen < total ? '0'.repeat(total - valHexLen) : '';
-};
-
-/**
-  * fillAndConcat
-  *
-  * Similar to fill except it appends the val to the end
-  *
-  * @param {number} total
-  * @param {string} val
-  *
-  * @return {string}
-  */
-export const fillAndConcat = (total: number, val: string) => (
-  val.length ? (
-    `${fill(total, val.toString())}${val}`
-  ) : (
-    fill(total, val)
-  )
-);
 
 const hexFill = (total: number, val: string | number) => (
   fillAndConcat(total, val.toString(16))
 );
-
-/**
-  * binToHex
-  *
-  * Take an array of binary numbers and converts to hex.
-  * The length must be evenly divisble by 4 (4 bits = 1 hex)
-  *
-  * @param {Array<number>} bin
-  *
-  * @return {string}
-  */
-export const binToHex = (bin: Array<number>) => (bin.length % 4 === 0 && parseInt(bin.join(''), 2).toString(16));
 
 /**
   * calcLength
