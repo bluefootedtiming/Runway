@@ -18,18 +18,30 @@ type parameterType = {
 //  Defining Parameters
 // =====================
 
+const initArgs = (values, args) => {
+  const val = args
+    .filter(arg => (
+      (values[`${arg.name}`] !== undefined)
+    ))
+    .map(arg => arg(values[`${arg.name}`]));
+  if (val.length !== args.length) console.log( val, args);
+  return val;
+};
+
 /**
  * ROSpecStartTrigger
  *
  * @param {Object} values
  * @returns {parameterType}
  */
-export const ROSpecStartTrigger = (values) => ({
-  type: constants.ROSpecStartTrigger,
-  args: [
-    properties.ROSpecStartTriggerType(values.ROSpecStartTriggerType),
-  ]
-});
+export function ROSpecStartTrigger(values) {
+  return {
+    type: constants.ROSpecStartTrigger,
+    args: initArgs(values, [
+      properties.ROSpecStartTriggerType,
+    ])
+  };
+}
 
 /**
  * ROSpecStopTrigger
@@ -37,13 +49,15 @@ export const ROSpecStartTrigger = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const ROSpecStopTrigger = (values) => ({
-  type: constants.ROSpecStopTrigger,
-  args: [
-    properties.ROSpecStopTriggerType(values.ROSpecStopTriggerType),
-    properties.DurationTriggerValue(values.DurationTriggerValue)
-  ]
-});
+export function ROSpecStopTrigger(values) {
+  return {
+    type: constants.ROSpecStopTrigger,
+    args: initArgs(values, [
+      properties.ROSpecStopTriggerType,
+      properties.DurationTriggerValue
+    ])
+  };
+}
 
 /**
  * ROBoundarySpec
@@ -51,13 +65,15 @@ export const ROSpecStopTrigger = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const ROBoundarySpec = (values) => ({
-  type: constants.ROBoundarySpec,
-  args: [
-    ROSpecStartTrigger(values.ROSpecStartTrigger),
-    ROSpecStopTrigger(values.ROSpecStopTrigger)
-  ]
-});
+export function ROBoundarySpec(values) {
+  return {
+    type: constants.ROBoundarySpec,
+    args: initArgs(values, [
+      ROSpecStartTrigger,
+      ROSpecStopTrigger
+    ])
+  };
+}
 
 /**
  * AISpecStopTrigger
@@ -65,13 +81,15 @@ export const ROBoundarySpec = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const AISpecStopTrigger = (values) => ({
-  type: constants.AISpecStopTrigger,
-  args: [
-    properties.AISpecStopTriggerType(values.AISpecStopTriggerType),
-    properties.DurationTriggerValue(values.DurationTriggerValue)
-  ]
-});
+export function AISpecStopTrigger(values) {
+  return {
+    type: constants.AISpecStopTrigger,
+    args: initArgs(values, [
+      properties.AISpecStopTriggerType,
+      properties.DurationTriggerValue
+    ])
+  };
+}
 
 /**
  * InventoryParameterSpec
@@ -79,13 +97,15 @@ export const AISpecStopTrigger = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const InventoryParameterSpec = (values) => ({
-  type: constants.InventoryParameterSpec,
-  args: [
-    properties.InventoryParameterSpecID(values.InventoryParameterSpecID),
-    properties.ProtocolID(values.ProtocolID),
-  ]
-});
+export function InventoryParameterSpec(values) {
+  return {
+    type: constants.InventoryParameterSpec,
+    args: initArgs(values, [
+      properties.InventoryParameterSpecID,
+      properties.ProtocolID,
+    ])
+  };
+}
 
 /**
  * AISpec
@@ -93,17 +113,19 @@ export const InventoryParameterSpec = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const AISpec = (values) => ({
-  type: constants.AISpec,
-  args: [
-    properties.AntennaCount(values.AntennaCount),
-    values.AntennaID && properties.AntennaID(values.AntennaID),
-    AISpecStopTrigger(values.AISpecStopTrigger),
-    InventoryParameterSpec(values.InventoryParameterSpec)
-    // AntennaConfigParam
-    // CustomParam
-  ]
-});
+export function AISpec(values) {
+  return {
+    type: constants.AISpec,
+    args: initArgs(values, [
+      properties.AntennaCount,
+      properties.AntennaID,
+      AISpecStopTrigger,
+      InventoryParameterSpec
+      // AntennaConfigParam
+      // CustomParam
+    ])
+  };
+}
 
 /**
  * TagReportContentSelector
@@ -111,12 +133,15 @@ export const AISpec = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const TagReportContentSelector = (values) => ({
-  type: constants.TagReportContentSelector,
-  args: [
-    properties.TagReportContentSelectorValue(values.TagReportContentSelectorValue)
-  ]
-});
+export function TagReportContentSelector(values) {
+  return {
+    type: constants.TagReportContentSelector,
+    args: initArgs(values, [
+      properties.TagReportContentSelectorValue,
+      C1G2EPCMemorySelector,
+    ])
+  };
+}
 
 /**
  * C1G2EPCMemorySelector
@@ -124,12 +149,14 @@ export const TagReportContentSelector = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const C1G2EPCMemorySelector = (values) => ({
-  type: constants.C1G2EPCMemorySelector,
-  args: [
-    properties.C1G2EPCMemorySelectorValue(values.C1G2EPCMemorySelectorValue)
-  ]
-});
+export function C1G2EPCMemorySelector(values) {
+  return {
+    type: constants.C1G2EPCMemorySelector,
+    args: initArgs(values, [
+      properties.C1G2EPCMemorySelectorValue
+    ])
+  };
+}
 
 /**
  * ROReportSpec
@@ -137,15 +164,17 @@ export const C1G2EPCMemorySelector = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const ROReportSpec = (values) => ({
-  type: constants.ROReportSpec,
-  args: [
-    properties.ROReportTrigger(values.ROReportTrigger),
-    properties.ROReportTriggerNValue(values.ROReportTriggerNValue),
-    TagReportContentSelector(values.TagReportContentSelector),
-    C1G2EPCMemorySelector(values.C1G2EPCMemorySelector)
-  ]
-});
+export function ROReportSpec(values) {
+  return {
+    type: constants.ROReportSpec,
+    args: initArgs(values, [
+      properties.ROReportTrigger,
+      properties.ROReportTriggerNValue,
+      TagReportContentSelector,
+      Custom
+    ])
+  };
+}
 
 /**
  * ROSpec
@@ -153,17 +182,19 @@ export const ROReportSpec = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const ROSpec = (values) => ({
-  type: constants.ROSpec,
-  args: [
-    properties.ROSpecID(values.ROSpecID),
-    properties.ROSpecPriority(values.ROSpecPriority),
-    properties.ROSpecCurrentState(values.ROSpecCurrentState),
-    ROBoundarySpec(values.ROBoundarySpec),
-    AISpec(values.AISpec),
-    ROReportSpec(values.ROReportSpec)
-  ]
-});
+export function ROSpec(values) {
+  return {
+    type: constants.ROSpec,
+    args: initArgs(values, [
+      properties.ROSpecID,
+      properties.ROSpecPriority,
+      properties.ROSpecCurrentState,
+      ROBoundarySpec,
+      AISpec,
+      ROReportSpec
+    ])
+  };
+}
 
 
 /**
@@ -172,9 +203,28 @@ export const ROSpec = (values) => ({
  * @param {Object} values
  * @returns {parameterType}
  */
-export const EventsAndReports = (values) => ({
-  type: constants.EventsAndReports,
-  args: [
-    properties.EventsAndReports(values.EventsAndReports)
-  ]
-});
+export function EventsAndReports(values) {
+  return {
+    type: constants.EventsAndReports,
+    args: initArgs(values, [
+      properties.EventsAndReports
+    ])
+  };
+}
+
+/**
+ * Custom
+ *
+ * @param {Object} values
+ * @returns {parameterType}
+ */
+export function Custom(values) {
+  return {
+    type: constants.Custom,
+    args: initArgs(values, [
+      properties.VendorID,
+      properties.Subtype,
+      properties.VendorParameterValue
+    ])
+  };
+}
