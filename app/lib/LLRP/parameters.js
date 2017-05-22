@@ -18,15 +18,19 @@ type parameterType = {
 //  Defining Parameters
 // =====================
 
-const initArgs = (values, args) => {
-  const val = args
-    .filter(arg => (
-      (values[`${arg.name}`] !== undefined)
-    ))
-    .map(arg => arg(values[`${arg.name}`]));
-  if (val.length !== args.length) console.log( val, args);
-  return val;
-};
+/**
+ * initArgs
+ *
+ * Takes all the avaiable keys in values and runs functions on them
+ * if they are listed in the array.
+ *
+ * @param {Object} values
+ * @param {Array<function>} args
+ */
+const initArgs = (values, args) => (
+  args.filter(arg => values[`${arg.name}`] !== undefined)
+    .map(arg => arg(values[`${arg.name}`]))
+);
 
 /**
  * ROSpecStartTrigger
