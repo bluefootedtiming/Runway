@@ -25,8 +25,8 @@ export const addROSpec = () => (
           AntennaCount: '1',
           AntennaID: '0',
           AISpecStopTrigger: {
-            AISpecStopTriggerType: '0',
-            DurationTriggerValue: 'e38'
+            AISpecStopTriggerType: '1',
+            DurationTriggerValue: '3e8'
           },
           InventoryParameterSpec: {
             InventoryParameterSpecID: '1',
@@ -37,11 +37,16 @@ export const addROSpec = () => (
           ROReportTrigger: '1',
           ROReportTriggerNValue: '0',
           TagReportContentSelector: {
-            TagReportContentSelectorValue: 'ffc0'
+            TagReportContentSelectorValue: 'ffc0',
+            C1G2EPCMemorySelector: {
+              C1G2EPCMemorySelectorValue: 'c0'
+            },
           },
-          C1G2EPCMemorySelector: {
-            C1G2EPCMemorySelectorValue: 'c0'
-          }
+          // Custom: {
+          //   VendorID: '67ba',
+          //   Subtype: '8e',
+          //   VendorParameterValue: '1',
+          // }
         }
       })
     ]
