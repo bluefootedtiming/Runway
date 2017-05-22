@@ -174,3 +174,18 @@ export const EventsAndReports = (value) => ({
   name: 'EventsAndReports',
   ...initProp(value, 'hex', 2)
 });
+
+export const VendorID = (value) => ({
+  name: 'VendorID',
+  ...initProp(value, 'hex', 32)
+});
+
+export const Subtype = (value) => ({
+  name: 'Subtype',
+  ...initProp(value, 'hex', 32)
+});
+
+export const VendorParameterValue = (value) => ({
+  name: 'VendorParameterValue',
+  ...initProp(value, 'hex', 8)
+});
