@@ -258,7 +258,10 @@ export default class RfidRelay {
       const { address: host, port } = reader;
       conns[i] = new net.Socket();
       conns[i].on('connect', () => console.log(port, 'connected'));
-      conns[i].on('error', () => console.log(port, 'couldn\'t connect'));
+      conns[i].on('error', () => {
+        log.error(`${host}:${port}: Could not connect to LLRP Server.`);
+        console.log(port, 'couldn\'t connect');
+      });
       conns[i].on('end', () => console.log(port, 'connection ended'));
       conns[i].on('data', (data) => {
         console.log('received: ', data);
