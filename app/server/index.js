@@ -4,6 +4,8 @@ import path from 'path';
 import jetpack from 'fs-jetpack';
 
 import { addMessage, setRSServerConnection } from '../actions/status';
+import * as llrpMessages from '../lib/LLRP/messages';
+import * as llrpConstants from '../lib/LLRP/messageConstants';
 
 const { app } = require('electron').remote;
 
@@ -35,11 +37,18 @@ export default class RfidRelay {
   start() {
     this.startRfidListener();
     this.connectToRSServer();
+    this.connectToLLRPReaders();
   }
 
   stop() {
     this.rfidListener.close();
     this.runScore.end();
+  }
+
+  restartRfidConnections() {
+    this.startRfidListener();
+    this.connectToLLRPReaders();
+    log.info('Reconnecting to LLRP Readers.');
   }
 
   /**
@@ -150,11 +159,9 @@ export default class RfidRelay {
     * @memberOf RfidRelay
     */
   handleConnection = (conn) => {
-    const runScore = this.runScore;
-
     conn.setEncoding('utf8');
     conn.on('data', (rawReaderData) => {
-      const { startTime, running } = this.store.getState().timer;
+      const { running } = this.store.getState().timer;
       if (!running) return;
 
       const readerDataArray = rawReaderData
@@ -167,15 +174,27 @@ export default class RfidRelay {
           || subArray[0] !== 'RSBI'
           || subArray[1].match(/^(\d){1,6}$/) === null) return;
 
-        const formattedArray = this.getFormattedReaderData(subArray, conn);
-        if (this.store.getState().status.runScoreServerConnected) runScore.write(`${formattedArray.join(',')}\r`);
-
-        jetpack.appendAsync(
-          path.join(LOGS_PATH, moment(startTime).format('YYYYMMDDhhmmss'), `${formattedArray[3]}.csv`),
-          `${formattedArray.concat(subArray[2]).join(',')}\r`
-        );
+        this.writeData(subArray);
       });
     });
+  }
+
+  writeData = (data, conn) => {
+    const {
+      timer: { startTime },
+      status: { runScoreServerConnected }
+    } = this.store.getState();
+    const formattedArray = this.getFormattedReaderData(data, conn);
+    if (runScoreServerConnected) this.runScore.write(`${formattedArray.join(',')}\r`);
+
+    jetpack.appendAsync(
+      path.join(
+        LOGS_PATH,
+        moment(startTime).format('YYYYMMDDhhmmss'),
+        `${formattedArray[3]}.csv`
+      ),
+      `${formattedArray.concat(data[2]).join(',')}\r`
+    );
   }
 
   /**
@@ -224,6 +243,53 @@ export default class RfidRelay {
     newData[1] = parseInt(readerDataArray[1], 10);
     return newData;
   }
+
+  /**
+    * connectToLLRPReaders
+    *
+    * Starts a connection to the list of available LLRP Connections
+    *
+    * @memberOf RfidRelay
+    */
+  connectToLLRPReaders = () => {
+    const { config: { readerMap } } = this.store.getState();
+    const conns = [];
+    console.log('connectToLLRPReaders');
+
+    readerMap.filter(({ isLLRP }) => isLLRP).forEach((reader, i) => {
+      const { address: host, port } = reader;
+      conns[i] = new net.Socket();
+      conns[i].on('connect', () => console.log(port, 'connected'));
+      conns[i].on('error', () => console.log(port, 'couldn\'t connect'));
+      conns[i].on('end', () => console.log(port, 'connection ended'));
+      conns[i].on('data', (data) => {
+        console.log('received: ', data);
+        switch (data[1]) {
+          case llrpConstants.SET_READER_CONFIG_RESPONSE: {
+            conns[i].write(llrpMessages.addROSpec());
+            break;
+          }
+          case llrpConstants.ADD_ROSPEC_RESPONSE: {
+            conns[i].write(llrpMessages.enableROSpec());
+            break;
+          }
+          case llrpConstants.ENABLE_ROSPEC_RESPONSE: {
+            conns[i].write(llrpMessages.startROSpec());
+            break;
+          }
+          case llrpConstants.KEEPALIVE: {
+            conns[i].write(llrpMessages.keepAliveAck());
+            break;
+          }
+          case llrpConstants.RO_ACCESS_REPORT: {
+            log.info('Tag found!');
+            break;
+          }
+          default:
+            console.log(port, data[1]);
+        }
+      });
+      conns[i].connect({ host, port });
+    });
+  }
 }
-
-
