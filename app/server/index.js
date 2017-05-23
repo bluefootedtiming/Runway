@@ -120,13 +120,11 @@ export default class RfidRelay {
 
     let currentAttempts = 0;
     this.runScore.on('error', () => {
+      if (currentAttempts === 0) log.error('Failed to connect to RSServer. Retrying.');
       this.store.dispatch(setRSServerConnection(false));
       currentAttempts += 1;
-      log.error('Failed to connect to RSServer.');
-      log.error(`(${currentAttempts}) reconnect attempts.`);
       if (MAX_CONNECT_ATTEMPTS <= currentAttempts) {
         log.error(`Cannot connect to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
-        log.error('Please review server setup.');
       } else {
         setTimeout(() => (attemptRSServerConnection(serverInfo)), 5000);
       }
