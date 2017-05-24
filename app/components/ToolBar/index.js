@@ -57,8 +57,8 @@ export default class Tools extends Component {
     }
   }
 
-  restartRfidServer = () => {
-    relay.startRfidListener();
+  restartRfidConnections = () => {
+    relay.restartRfidConnections();
   }
 
   handleOnClickEditEvents = () => {
@@ -88,7 +88,7 @@ export default class Tools extends Component {
           <Button
             name="rfidServer"
             title="Restart the RFID Reader Server"
-            onClick={this.restartRfidServer}
+            onClick={this.restartRfidConnections}
             isLeftButton
           >
             <i className="fa fa-refresh" />
