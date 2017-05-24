@@ -6,17 +6,29 @@ import jetpack from 'fs-jetpack';
 import { addMessage, setRSServerConnection } from '../actions/status';
 import * as llrpMessages from '../lib/LLRP/messages';
 import * as llrpConstants from '../lib/LLRP/messageConstants';
+import decode, { testDecode } from '../lib/LLRP/decode';
 
+// testDecode();
 const { app } = require('electron').remote;
 
 export const MAX_CONNECT_ATTEMPTS = 5;
 export const DOCUMENTS_PATH = app.getPath('documents');
 export const LOCAL_FOLDER = 'AlienRunwayData';
 export const LOGS_PATH = `${DOCUMENTS_PATH}/${LOCAL_FOLDER}`;
+export const hexToText = (val: string) => {
+  let str = '';
+  for (let i = 0; i < val.length; i += 2) {
+    str += String.fromCharCode(parseInt(val.slice(i, i + 2), 16));
+  }
+  return str;
+};
 export const log = {
   store: null,
   info(message: string) {
     this.store.dispatch(addMessage(message, 0));
+  },
+  hexInfo(message: string) {
+    this.store.dispatch(addMessage(hexToText(message), 0));
   },
   error(message: string) {
     this.store.dispatch(addMessage(message, 1));
@@ -27,17 +39,19 @@ export default class RfidRelay {
   store;
   runScore: net.Socket;
   rfidListener: net.Server;
+  llrpConns: Array<net.Socket>;
 
   constructor(store) {
     this.store = store;
     log.store = this.store;
-    this.connected = false;
+    this.llrpConns = [];
   }
 
   start() {
     this.startRfidListener();
     this.connectToRSServer();
     this.connectToLLRPReaders();
+    // testDecode();
   }
 
   stop() {
@@ -251,46 +265,75 @@ export default class RfidRelay {
     */
   connectToLLRPReaders = () => {
     const { config: { readerMap } } = this.store.getState();
-    const conns = [];
-    console.log('connectToLLRPReaders');
+    const { llrpConns } = this;
+    if (llrpConns) {
+      llrpConns.forEach(conn => console.log(conn));
+    }
 
     readerMap.filter(({ isLLRP }) => isLLRP).forEach((reader, i) => {
       const { address: host, port } = reader;
-      conns[i] = new net.Socket();
-      conns[i].on('connect', () => console.log(port, 'connected'));
-      conns[i].on('error', () => {
+      let isConnected = false;
+      llrpConns[i] = new net.Socket();
+      llrpConns[i].on('connect', () => {
+        console.log(port, 'connected');
+        isConnected = true;
+        setInterval(() => {
+          if (isConnected && this.store.getState().timer.running) {
+            llrpConns[i].write(llrpMessages.getReport());
+          }
+        }, 500);
+      });
+      llrpConns[i].on('error', () => {
+        isConnected = false;
         log.error(`${host}:${port}: Could not connect to LLRP Server.`);
         console.log(port, 'couldn\'t connect');
       });
-      conns[i].on('end', () => console.log(port, 'connection ended'));
-      conns[i].on('data', (data) => {
-        console.log('received: ', data);
-        switch (data[1]) {
-          case llrpConstants.SET_READER_CONFIG_RESPONSE: {
-            conns[i].write(llrpMessages.addROSpec());
+      llrpConns[i].on('end', () => { isConnected = false; console.log(port, 'connection ended'); });
+      llrpConns[i].on('data', (data) => {
+        const nameOf = (obj) => Object.keys(obj)[0];
+        const read = (obj) => parseInt(obj[0].LLRPStatus.value, 16) ? hexToText(obj[0].LLRPStatus.value) : 'Success!';
+        const [message, ...parameters] = decode(data);
+        switch (nameOf(message)) {
+          case 'READER_EVENT_NOTIFICATION':
+            console.log(nameOf(message), parameters);
+            llrpConns[i].write(llrpMessages.getReaderConfig());
             break;
-          }
-          case llrpConstants.ADD_ROSPEC_RESPONSE: {
-            conns[i].write(llrpMessages.enableROSpec());
+          case 'GET_READER_CONFIG_RESPONSE':
+            console.log(nameOf(message), parameters);
+            llrpConns[i].write(llrpMessages.setReaderConfig());
             break;
-          }
-          case llrpConstants.ENABLE_ROSPEC_RESPONSE: {
-            conns[i].write(llrpMessages.startROSpec());
+          case 'SET_READER_CONFIG_RESPONSE':
+            console.log(nameOf(message), read(parameters));
+            llrpConns[i].write(llrpMessages.deleteROSpec());
             break;
-          }
-          case llrpConstants.KEEPALIVE: {
-            conns[i].write(llrpMessages.keepAliveAck());
+          case 'DELETE_ROSPEC_RESPONSE':
+            console.log(nameOf(message), read(parameters));
+            llrpConns[i].write(llrpMessages.addROSpec());
             break;
-          }
-          case llrpConstants.RO_ACCESS_REPORT: {
+          case 'ADD_ROSPEC_RESPONSE':
+            console.log(nameOf(message), read(parameters));
+            llrpConns[i].write(llrpMessages.enableROSpec());
+            break;
+          case 'ENABLE_ROSPEC_RESPONSE':
+            console.log(nameOf(message), read(parameters));
+            llrpConns[i].write(llrpMessages.startROSpec());
+            break;
+          case 'START_ROSPEC_RESPONSE':
+            console.log(nameOf(message), read(parameters));
+            break;
+          case 'KEEPALIVE':
+            console.log(nameOf(message), read(parameters));
+            llrpConns[i].write(llrpMessages.keepAliveAck());
+            break;
+          case 'RO_ACCESS_REPORT':
+            console.log(nameOf(message), parameters);
             log.info('Tag found!');
             break;
-          }
           default:
-            console.log(port, data[1]);
+            console.log(port, message, parameters, data);
         }
       });
-      conns[i].connect({ host, port });
+      llrpConns[i].connect({ host, port });
     });
   }
 }
