@@ -104,3 +104,19 @@ export const enableEventsAndReports = () => (
     args: []
   })
 );
+
+export const keepAliveAck = () => (
+  createLLRPMessage({
+    id: 0x12,
+    type: constants.KEEPALIVE_ACK,
+    args: []
+  })
+);
+
+export const getReport = () => (
+  createLLRPMessage({
+    id: 0x13,
+    type: constants.GET_REPORT,
+    args: []
+  })
+);
