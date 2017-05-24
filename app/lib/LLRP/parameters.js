@@ -2,14 +2,14 @@ import * as properties from './properties';
 import * as constants from './parameterConstants';
 
 
-type parameterConstantType = {
+export type parameterConstantType = {
   id: number,
   tvLength: number,         // This is the length of the TV parameter
   staticLength: number,     // This is the length of the TLV parameter
   hasSubParameter: boolean
 };
 
-type parameterType = {
+export type parameterType = {
   type: parameterConstantType,
   args: Array<parameterType | propertyType>
 };
