@@ -37,16 +37,16 @@ export const addROSpec = () => (
           ROReportTrigger: '1',
           ROReportTriggerNValue: '0',
           TagReportContentSelector: {
-            TagReportContentSelectorValue: 'ffc0',
+            TagReportContentSelectorValue: '0000',
             C1G2EPCMemorySelector: {
               C1G2EPCMemorySelectorValue: 'c0'
             },
-          },
+          // },
           // Custom: {
           //   VendorID: '67ba',
           //   Subtype: '8e',
           //   VendorParameterValue: '1',
-          // }
+          }
         }
       })
     ]
@@ -57,9 +57,7 @@ export const enableROSpec = () => (
   createLLRPMessage({
     id: 0x66,
     type: constants.ENABLE_ROSPEC,
-    args: [
-      properties.ROSpecID('1')
-    ]
+    args: [properties.ROSpecID('1')]
   })
 );
 
@@ -67,9 +65,15 @@ export const startROSpec = () => (
   createLLRPMessage({
     id: 0x77,
     type: constants.START_ROSPEC,
-    args: [
-      properties.ROSpecID('1')
-    ]
+    args: [properties.ROSpecID('1')]
+  })
+);
+
+export const deleteROSpec = () => (
+  createLLRPMessage({
+    id: 0x771,
+    type: constants.DELETE_ROSPEC,
+    args: [properties.ROSpecID('1')]
   })
 );
 
