@@ -11,8 +11,8 @@ const { app } = require('electron').remote;
 
 export const LLRP_TAG_REGEX = /(00f0000c00f100080010)((\d){4})/;
 export const MAX_CONNECT_ATTEMPTS = 5;
-export const DOCUMENTS_PATH = app.getPath('documents');
 export const LOCAL_FOLDER = 'AlienRunwayData';
+export const DOCUMENTS_PATH = app.getPath('documents');
 export const LOGS_PATH = `${DOCUMENTS_PATH}/${LOCAL_FOLDER}`;
 // TODO: It would be nice to have the structure of logging changes
 //        so that debug messages could be shown and/or not shown.
@@ -28,10 +28,10 @@ export const log = {
     this.write(1, messages);
   },
   write(code: number, messages: string | Array<string>) {
-    if (typeof messages === 'string') {
-      this.store.dispatch(addMessage(messages, code));
-    } else {
+    if (Array.isArray(messages)) {
       this.store.dispatch(addMessage(messages.join(), code));
+    } else {
+      this.store.dispatch(addMessage(messages, code));
     }
   }
 };
@@ -301,15 +301,17 @@ export default class RfidRelay {
     const { config: { readerMap } } = this.store.getState();
     const { llrpConns } = this;
     if (llrpConns) { this.stopLLRPConnections(); }
-    readerMap.filter(({ isLLRP }) => isLLRP).forEach((reader, i) => {
-      const { address: host, port } = reader;
-      llrpConns[i] = new net.Socket();
-      llrpConns[i].on('data', (data) => this.handleLLRPData(llrpConns[i], data));
-      llrpConns[i].on('error', () => log.error(`Could not connect to LLRP Server: ${host}:${port}`));
-      llrpConns[i].on('end', () => log.info(`Connection ended: ${host}:${port}`));
-      llrpConns[i].on('connect', () => log.info(`Connected to LLRP Server: ${host}:${port}`));
-      llrpConns[i].connect({ host, port });
-    });
+    if (readerMap.length) {
+      readerMap.filter(({ isLLRP }) => isLLRP).forEach((reader, i) => {
+        const { address: host, port } = reader;
+        llrpConns[i] = new net.Socket();
+        llrpConns[i].on('data', (data) => this.handleLLRPData(llrpConns[i], data));
+        llrpConns[i].on('error', () => log.error(`Could not connect to LLRP Server: ${host}:${port}`));
+        llrpConns[i].on('end', () => log.info(`Connection ended: ${host}:${port}`));
+        llrpConns[i].on('connect', () => log.info(`Connected to LLRP Server: ${host}:${port}`));
+        llrpConns[i].connect({ host, port });
+      });
+    }
   }
 
   handleLLRPData = (conn, data) => {

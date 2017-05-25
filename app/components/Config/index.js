@@ -122,7 +122,9 @@ class Configuration extends Component {
     if (listenAddress) { this.props.setListenAddress(this.state.listenAddress); }
     if (listenPort) { this.props.setListenPort(Number(listenPort)); }
 
-    const readerMap = this.state.readerMap.filter(({ address, event }) => address && event);
+    const readerMap = this.state.readerMap.filter(({ address, port, event }) => (
+      address && event && !isNaN(parseInt(port, 10))
+    ));
     this.props.setReaderMap(readerMap);
     this.setState({ readerMap });
 
@@ -165,7 +167,7 @@ class Configuration extends Component {
         <input placeholder="Listen Port" name="listenPort" defaultValue={this.props.listenPort} ref={c => (this.listenPort = c)} />
         <h2>
           RFID Readers
-          <i className="fa fa-plus-circle" onClick={this.handleAddReader} role="button" />
+          <Button onClick={this.handleAddReader} style={{ background: 'white', margin: 0 }}><i className="fa fa-plus-circle" /></Button>
         </h2>
         <aside>
           Configure Readers to use TagStreamFormat <b>%i,%N,%T</b>.
