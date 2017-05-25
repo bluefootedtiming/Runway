@@ -4,37 +4,24 @@ import {
   SET_RUNSCORE_PORT,
   SET_LISTEN_ADDRESS,
   SET_LISTEN_PORT,
+  SET_READER_MAP,
   ADD_READER,
   DEL_READER,
   ADD_EVENT,
-  DEL_EVENT
+  DEL_EVENT,
+  configurationsType
 } from '../actions/config';
-
-export type readerMapType = { [string]: string };
-export type eventsType = [?string];
-
-export type configStateType = {
-  runScoreAddress: string,
-  runScorePort: number,
-  listenAddress: string,
-  listenPort: number,
-  readerMap: readerMapType,
-  events: eventsType
-};
 
 const initialState = {
   runScoreAddress: '192.168.1.4',
   runScorePort: 3988,
   listenAddress: '192.168.1.5',
   listenPort: 3988,
-  readerMap: {
-    // '192.168.1.100': 'START',
-    // '192.168.1.102': 'FINISH'
-  },
+  readerMap: [],
   events: []
 };
 
-export default function config(state: configStateType = initialState, action) {
+export default function config(state: configurationsType = initialState, action) {
   switch (action.type) {
     case LOAD_CONFIGURATIONS:
       return {
@@ -65,17 +52,24 @@ export default function config(state: configStateType = initialState, action) {
         listenPort: action.payload
       };
 
+    case SET_READER_MAP:
+      return {
+        ...state,
+        readerMap: action.payload
+      };
+
     case ADD_READER: {
-      const { name, address } = action.payload;
-      const newState = Object.assign({}, state);
-      newState.readerMap[address] = name;
-      return newState;
+      return {
+        ...state,
+        readerMap: state.readerMap.concat(action.payload)
+      };
     }
 
     case DEL_READER: {
-      const newState = Object.assign({}, state);
-      delete newState.readerMap[action.payload];
-      return newState;
+      return {
+        ...state,
+        readerMap: state.readerMap.filter(({ address }) => address !== action.payload)
+      };
     }
 
     case ADD_EVENT:

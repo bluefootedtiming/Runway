@@ -3,18 +3,28 @@ export const SET_RUNSCORE_ADDRESS = 'SET_RUNSCORE_ADDRESS';
 export const SET_RUNSCORE_PORT = 'SET_RUNSCORE_PORT';
 export const SET_LISTEN_ADDRESS = 'SET_LISTEN_ADDRESS';
 export const SET_LISTEN_PORT = 'SET_LISTEN_PORT';
+export const SET_READER_MAP = 'SET_READER_MAP';
 export const ADD_READER = 'ADD_READER';
 export const DEL_READER = 'DEL_READER';
 export const ADD_EVENT = 'ADD_EVENT';
 export const DEL_EVENT = 'DEL_EVENT';
-export type readerType = { name: string, address: string };
+
+export type readerType = {
+  id?: string,
+  address: string,
+  event: string,
+  port?: string,
+  isLLRP?: boolean
+};
+export type readerMapType = Array<readerType>;
+export type eventsType = Array<?string>;
 export type configurationsType = {
   runScoreAddress?: string,
   runScorePort?: number,
   listenAddress?: string,
   listenPort?: number,
-  readerMap?: { [string]: string },
-  events?: [?string]
+  readerMap?: readerMapType,
+  events?: eventsType
 };
 
 export function loadConfigurations(config: configurationsType) {
@@ -49,6 +59,13 @@ export function setListenPort(port: number) {
   return {
     type: SET_LISTEN_PORT,
     payload: port
+  };
+}
+
+export function setReaderMap(readerMap: readerMapType) {
+  return {
+    type: SET_READER_MAP,
+    payload: readerMap
   };
 }
 

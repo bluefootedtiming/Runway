@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 
-import Status from '../containers/AppStatus';
-import Config from '../containers/AppConfig';
-import EditEvents from '../containers/AppEditEvents';
-import styles from './toolbar.scss';
+import Status from '../../containers/AppStatus';
+import Config from '../../containers/AppConfig';
+import EditEvents from '../../containers/AppEditEvents';
+import styles from './ToolBar.scss';
 
-import { relay } from '../index';
-import ButtonBar from './ButtonBar';
-import Button from './Button';
+import { relay } from '../../index';
+import ButtonBar from '../ButtonBar';
+import Button from '../Button';
 
-import { APP_HEIGHT, APP_WIDTH, APP_EXTENDED_HEIGHT } from '../constants';
+import { APP_HEIGHT, APP_WIDTH, APP_EXTENDED_HEIGHT } from '../../constants';
 
 const { BrowserWindow } = require('electron').remote;
 
@@ -57,8 +57,8 @@ export default class Tools extends Component {
     }
   }
 
-  restartRfidServer = () => {
-    relay.startRfidListener();
+  restartRfidConnections = () => {
+    relay.restartRfidConnections();
   }
 
   handleOnClickEditEvents = () => {
@@ -88,7 +88,7 @@ export default class Tools extends Component {
           <Button
             name="rfidServer"
             title="Restart the RFID Reader Server"
-            onClick={this.restartRfidServer}
+            onClick={this.restartRfidConnections}
             isLeftButton
           >
             <i className="fa fa-refresh" />

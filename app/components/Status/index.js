@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+
 import styles from './Status.scss';
 
 class Status extends Component {

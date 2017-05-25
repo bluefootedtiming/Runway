@@ -2,15 +2,17 @@ import React, { Component } from 'react';
 import jetpack from 'fs-jetpack';
 import os from 'os';
 
-import { readerMapType, eventsType } from '../reducers/config';
-import { CONFIG_PATH } from './Home';
+import { readerMapType, eventsType } from '../../actions/config';
+import { CONFIG_PATH } from '../Home';
 
-import SyncReaders from '../containers/AppSyncReaders';
+import SyncReaders from '../../containers/AppSyncReaders';
 
-import DropdownSelect from './DropdownSelect';
-import ReaderMapForm from './ReaderMapForm';
-import ButtonBar from './ButtonBar';
-import Button from './Button';
+import DropdownSelect from '../DropdownSelect';
+import ReaderMapForm from '../ReaderMapForm';
+import ButtonBar from '../ButtonBar';
+import Button from '../Button';
+
+import styles from './Config.scss';
 
 
 export const notify = (message) => {
@@ -28,8 +30,7 @@ class Configuration extends Component {
     setRunScorePort: () => void,
     setListenAddress: () => void,
     setListenPort: () => void,
-    addReader: () => void,
-    delReader: () => void,
+    setReaderMap: () => void,
     runScoreAddress: string,
     runScorePort: number,
     listenAddress: string,
@@ -47,7 +48,7 @@ class Configuration extends Component {
   constructor() {
     super();
     this.state = {
-      readerMap: {},
+      readerMap: [{ address: '', event: '' }],
       listenAddresses: [],
       listenAddress: ''
     };
@@ -58,8 +59,8 @@ class Configuration extends Component {
     * alien runway address dropdown.
     */
   componentWillMount() {
-    const netInterfaces = os.networkInterfaces();
     const listenAddresses = [];
+    const netInterfaces = os.networkInterfaces();
     Object.keys(netInterfaces).forEach(key => (
       netInterfaces[key].forEach(({ address, family }) => {
         if (address !== '127.0.0.1' && family === 'IPv4') {
@@ -67,41 +68,44 @@ class Configuration extends Component {
         }
       })
     ));
-    const readerMap = Object.assign({}, this.props.readerMap);
+    const listenAddress = listenAddresses.includes(this.props.listenAddress) ? (
+      this.props.listenAddress
+    ) : (
+      listenAddresses[0]
+    );
     this.setState({
-      listenAddress: (
-        listenAddresses.includes(this.props.listenAddress) ? (
-          this.props.listenAddress
-        ) : (
-          listenAddresses[0]
-      )),
+      listenAddress,
       listenAddresses,
-      readerMap
+      readerMap: this.props.readerMap
     });
+    if (this.state.readerMap.length === 0) this.handleAddReader();
+  }
+
+  componentWillUpdate() {
+    if (this.state.readerMap.length === 0) this.handleAddReader();
   }
 
   handleAddReader = () => {
-    if (!this.state.readerMap['']) {
+    if (this.state.readerMap.findIndex(({ address }) => address === '') < 0) {
+      const randomId = `${(Math.floor(Math.random() * (255 - 16)) + 16).toString(16)}`;
       this.setState({
-        readerMap: { ...this.state.readerMap, '': '' }
+        readerMap: [{ id: randomId, address: '', event: '', isLLRP: true }, ...this.state.readerMap]
       });
     }
   }
 
-  handleChangeReaderAddress = (prevAddress, newAddress) => {
-    const newReaderMap = Object.assign({}, this.state.readerMap);
-    const event = newReaderMap[prevAddress];
-    delete newReaderMap[prevAddress];
-    this.setState({ readerMap: { ...newReaderMap, [`${newAddress}`]: event } });
+  handleChangeReaderValue = (name, key, newVal) => {
+    const index = this.state.readerMap.findIndex(({ address }) => address === key);
+    const newMap = [...this.state.readerMap];
+    newMap[index][`${name}`] = newVal;
+    this.setState({ readerMap: newMap });
   }
 
-  handleChangeReaderEvent = (address, event) => {
-    this.setState({ readerMap: { ...this.state.readerMap, [`${address}`]: event } });
-  }
-
-  handleRemoveReader = (address) => {
-    const { [`${address}`]: removedAddress, ...newReaderMap } = this.state.readerMap;
-    this.setState({ readerMap: newReaderMap });
+  handleRemoveReader = (key) => {
+    const index = this.state.readerMap.findIndex(({ address }) => address === key);
+    const newMap = [...this.state.readerMap];
+    newMap.splice(index, 1);
+    this.setState({ readerMap: newMap });
   }
 
   onSave = () => {
@@ -110,24 +114,17 @@ class Configuration extends Component {
       runScorePort: { value: runScorePort },
       listenPort: { value: listenPort },
       state: { listenAddress },
-      props: { readerMap, events }
+      props: { events }
     } = this;
 
     if (runScoreAddress) { this.props.setRunScoreAddress(runScoreAddress); }
     if (runScorePort) { this.props.setRunScorePort(Number(runScorePort)); }
+    if (listenAddress) { this.props.setListenAddress(this.state.listenAddress); }
     if (listenPort) { this.props.setListenPort(Number(listenPort)); }
-    if (listenAddress !== this.props.listenAddress) { this.props.setListenAddress(listenAddress); }
 
-    // Delete removed readers
-    Object.keys(readerMap).forEach(address => {
-      this.props.delReader(address);
-    });
-    // Add new readers & save edited readers
-    Object.entries(this.state.readerMap).forEach(([address, event]) => {
-      if (!event || !address) return;
-      this.props.addReader({ name: event, address });
-    });
-    this.setState({ readerMap: Object.assign({}, readerMap) });
+    const readerMap = this.state.readerMap.filter(({ address, event }) => address && event);
+    this.props.setReaderMap(readerMap);
+    this.setState({ readerMap });
 
     jetpack.write(
       CONFIG_PATH,
@@ -147,7 +144,7 @@ class Configuration extends Component {
     const { runScoreAddress, runScorePort, events } = this.props;
 
     return (
-      <section>
+      <section style={styles.input}>
         <h1>Configuration</h1>
 
         <h2>RunScore</h2>
@@ -167,7 +164,7 @@ class Configuration extends Component {
         />
         <input placeholder="Listen Port" name="listenPort" defaultValue={this.props.listenPort} ref={c => (this.listenPort = c)} />
         <h2>
-          RFID Locations
+          RFID Readers
           <i className="fa fa-plus-circle" onClick={this.handleAddReader} role="button" />
         </h2>
         <aside>
@@ -178,10 +175,12 @@ class Configuration extends Component {
         <ReaderMapForm
           readerMap={this.state.readerMap}
           eventList={events}
-          onChangeAddress={this.handleChangeReaderAddress}
-          onChangeEvent={this.handleChangeReaderEvent}
+          onChangeValue={this.handleChangeReaderValue}
           onRemoveReader={this.handleRemoveReader}
         />
+        <small>
+          **Note: Uncheck reader if nonLLRP
+        </small>
         <br />
         <ButtonBar>
           <Button onClick={this.onSave} isLeftButton>

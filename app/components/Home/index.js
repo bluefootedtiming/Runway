@@ -2,13 +2,13 @@
 import React, { Component } from 'react';
 import jetpack from 'fs-jetpack';
 
-import styles from './Home.css';
+import styles from './Home.scss';
 
-import TimerPanel from '../containers/TimerPanel';
-import Toolbar from '../containers/AppToolbar';
+import TimerPanel from '../../containers/TimerPanel';
+import Toolbar from '../../containers/AppToolbar';
 
-import { relay } from '../index';
-import { LOGS_PATH } from '../server/';
+import { relay } from '../../index';
+import { LOGS_PATH } from '../../server';
 
 export const CONFIG_PATH = `${LOGS_PATH}/config.json`;
 
