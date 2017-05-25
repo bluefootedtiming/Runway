@@ -175,7 +175,7 @@ export default class RfidRelay {
     conn.on('data', (rawReaderData) => {
       const { running } = this.store.getState().timer;
       if (!running) return;
-
+      const readerAddress = conn && conn.remoteAddress.split(':').pop();
       const readerDataArray = rawReaderData
         .split(/[\0\r\n]/)
         .filter(str => str !== '');
@@ -186,17 +186,17 @@ export default class RfidRelay {
           || subArray[0] !== 'RSBI'
           || subArray[1].match(/^(\d){1,6}$/) === null) return;
 
-        this.writeData(subArray);
+        this.writeData(subArray, readerAddress);
       });
     });
   }
 
-  writeData = (data, conn) => {
+  writeData = (data, readerAddress) => {
     const {
       timer: { startTime },
       status: { runScoreServerConnected }
     } = this.store.getState();
-    const formattedArray = this.getFormattedReaderData(data, conn);
+    const formattedArray = this.getFormattedReaderData(data, readerAddress);
     if (runScoreServerConnected) this.runScore.write(`${formattedArray.join(',')}\r`);
 
     jetpack.appendAsync(
@@ -243,12 +243,10 @@ export default class RfidRelay {
     *                            => ['RSBI', '452', '00:01:20.002', 'Start']
     * @memberOf RfidRelay
     */
-  getFormattedReaderData = (readerDataArray: Array<string>, conn: any) => {
+  getFormattedReaderData = (readerDataArray: Array<string>, readerAddress: any) => {
     const { config: { readerMap }, timer: { startTime } } = this.store.getState();
-    const readerAddress = conn && conn.remoteAddress.split(':').pop();
     const elapsed = moment.duration(moment.now() - startTime);
     const newData = readerDataArray.slice();
-
     const index = readerMap.find(({ address }) => address === readerAddress);
     if (index >= 0 && readerMap[index]) newData[3] = readerMap[index].event;
     newData[2] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
