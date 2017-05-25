@@ -45,15 +45,14 @@ const handleTLV = (param) => ({
   restOfParam: param.slice(8, param.length)
 });
 
-
-const decode = (msg: Buffer) => (
-  decodeMessage(msg.reduce((acc, dec) => (
+const decode = (msg: Buffer) => {
+  const hexMsg = msg.reduce((acc, dec) => (
     acc + (dec < 16 ? `0${dec.toString(16)}` : dec.toString(16))
-  ), ''))
-);
+  ), '');
+  return [decodeMessage(hexMsg), hexMsg];
+};
 
 const decodeMessage = (msg: string) => {
-  console.log(msg);
   const header = extractHeader(msg, MSG_HEADER);
   const restOfMsg = msg.slice(20, msg.length);
   const [name, attrs] = Object.entries(M_CONSTANTS).find(([, val]) => (
