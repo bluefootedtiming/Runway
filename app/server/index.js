@@ -5,34 +5,59 @@ import jetpack from 'fs-jetpack';
 
 import { addMessage, setRSServerConnection } from '../actions/status';
 import * as llrpMessages from '../lib/LLRP/messages';
-import * as llrpConstants from '../lib/LLRP/messageConstants';
-import decode, { testDecode } from '../lib/LLRP/decode';
+import decode from '../lib/LLRP/decode';
 
-// testDecode();
 const { app } = require('electron').remote;
 
+export const LLRP_TAG_REGEX = /(00f0000c00f100080010)((\d){4})/;
 export const MAX_CONNECT_ATTEMPTS = 5;
 export const DOCUMENTS_PATH = app.getPath('documents');
 export const LOCAL_FOLDER = 'AlienRunwayData';
 export const LOGS_PATH = `${DOCUMENTS_PATH}/${LOCAL_FOLDER}`;
-export const hexToText = (val: string) => {
+// TODO: It would be nice to have the structure of logging changes
+//        so that debug messages could be shown and/or not shown.
+export const log = {
+  store: null,
+  info(...messages: string | Array<string>) {
+    this.write(0, messages);
+  },
+  hexInfo(...messages: string | Array<string>) {
+    this.write(0, messages);
+  },
+  error(...messages: string | Array<string>) {
+    this.write(1, messages);
+  },
+  write(code: number, messages: string | Array<string>) {
+    if (typeof messages === 'string') {
+      this.store.dispatch(addMessage(messages, code));
+    } else {
+      this.store.dispatch(addMessage(messages.join(), code));
+    }
+  }
+};
+
+// ===============
+// LLRP helper functions
+// ===============
+const nameOf = (obj) => Object.keys(obj)[0];
+const hexToText = (val: string) => {
   let str = '';
   for (let i = 0; i < val.length; i += 2) {
     str += String.fromCharCode(parseInt(val.slice(i, i + 2), 16));
   }
   return str;
 };
-export const log = {
-  store: null,
-  info(message: string) {
-    this.store.dispatch(addMessage(message, 0));
-  },
-  hexInfo(message: string) {
-    this.store.dispatch(addMessage(hexToText(message), 0));
-  },
-  error(message: string) {
-    this.store.dispatch(addMessage(message, 1));
+const read = (obj) => (parseInt(obj[0].LLRPStatus.value, 16) ? hexToText(obj[0].LLRPStatus.value) : 'Success!');
+const getTags = (str: string, reg: RegExp, ret: Array<string> = []) => {
+  if (str.length < 1) { return undefined; }
+  const arry = str.match(reg);
+  if (arry && arry.index > 0) {
+    getTags(str.slice(arry.index + 1), reg, ret);
+  } else {
+    return undefined;
   }
+  ret.push(arry[2]);
+  return ret;
 };
 
 export default class RfidRelay {
@@ -51,12 +76,12 @@ export default class RfidRelay {
     this.startRfidListener();
     this.connectToRSServer();
     this.connectToLLRPReaders();
-    // testDecode();
   }
 
   stop() {
     this.rfidListener.close();
     this.runScore.end();
+    this.stopLLRPConnections();
   }
 
   restartRfidConnections() {
@@ -86,7 +111,7 @@ export default class RfidRelay {
     });
 
     this.rfidListener.on('close', () => {
-      log.info('Alien Runway Server stopped.');
+      // log.info('Alien Runway Server stopped.');
     });
 
     this.rfidListener.listen(listenPort, listenAddress, () => {
@@ -123,7 +148,7 @@ export default class RfidRelay {
     this.runScore = new net.Socket();
 
     const attemptRSServerConnection = (info: { host: string, port: number }) => {
-      log.info(`Connecting to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
+      // log.info(`Connecting to RSServer on: ${serverInfo.host}:${serverInfo.port}`);
       this.runScore.connect(info, () => {
         log.info('Connected to RSServer!');
         this.store.dispatch(setRSServerConnection(true));
@@ -203,7 +228,7 @@ export default class RfidRelay {
       path.join(
         LOGS_PATH,
         moment(startTime).format('YYYYMMDDhhmmss'),
-        `${formattedArray[3]}.csv`
+        `${formattedArray[3] || 'unmappedEvent'}.csv`
       ),
       `${formattedArray.concat(data[2]).join(',')}\r`
     );
@@ -247,12 +272,23 @@ export default class RfidRelay {
     const { config: { readerMap }, timer: { startTime } } = this.store.getState();
     const elapsed = moment.duration(moment.now() - startTime);
     const newData = readerDataArray.slice();
-    const index = readerMap.find(({ address }) => address === readerAddress);
-    if (index >= 0 && readerMap[index]) newData[3] = readerMap[index].event;
+    const reader = readerMap.find(({ address }) => address === readerAddress);
+    if (reader) newData[3] = reader.event;
     newData[2] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
     newData[1] = parseInt(readerDataArray[1], 10);
     return newData;
   }
+
+  /**
+    * stopLLRPConnections
+    *
+    * Destroys all current connections to LLRP Readers
+    *
+    * @memberOf RfidRelay
+    */
+  stopLLRPConnections = () => (
+    this.llrpConns && this.llrpConns.forEach(conn => conn.destroy())
+  )
 
   /**
     * connectToLLRPReaders
@@ -264,90 +300,64 @@ export default class RfidRelay {
   connectToLLRPReaders = () => {
     const { config: { readerMap } } = this.store.getState();
     const { llrpConns } = this;
-    if (llrpConns) {
-      llrpConns.forEach(conn => console.log(conn));
-    }
-
+    if (llrpConns) { this.stopLLRPConnections(); }
     readerMap.filter(({ isLLRP }) => isLLRP).forEach((reader, i) => {
       const { address: host, port } = reader;
-      let isConnected = false;
       llrpConns[i] = new net.Socket();
-      llrpConns[i].on('connect', () => {
-        console.log(port, 'connected');
-        isConnected = true;
-        setInterval(() => {
-          if (isConnected && this.store.getState().timer.running) {
-            llrpConns[i].write(llrpMessages.getReport());
-          }
-        }, 500);
-      });
-      llrpConns[i].on('data', (data) => (this.handleLLRPData(llrpConns[i], data)));
-      llrpConns[i].on('error', () => {
-        log.error(`${host}:${port}: Could not connect to LLRP Server.`);
-        console.log(port, 'couldn\'t connect');
-      });
-      llrpConns[i].on('end', () => {
-        isConnected = false;
-        console.log(port, 'connection ended');
-      });
+      llrpConns[i].on('data', (data) => this.handleLLRPData(llrpConns[i], data));
+      llrpConns[i].on('error', () => log.error(`Could not connect to LLRP Server: ${host}:${port}`));
+      llrpConns[i].on('end', () => log.info(`Connection ended: ${host}:${port}`));
+      llrpConns[i].on('connect', () => log.info(`Connected to LLRP Server: ${host}:${port}`));
       llrpConns[i].connect({ host, port });
     });
   }
 
   handleLLRPData = (conn, data) => {
-    const nameOf = (obj) => Object.keys(obj)[0];
-    const read = (obj) => (parseInt(obj[0].LLRPStatus.value, 16) ? hexToText(obj[0].LLRPStatus.value) : 'Success!');
-    const getTags = (str, reg, ret) => {
-      if (str.length < 1) return undefined;
-      const arry = str.match(reg);
-      if (arry && arry.index > 0) {
-        getTags(str.slice(arry.index + 1), reg, ret);
-      } else {
-        return undefined;
-      }
-      ret.push(arry[2]);
-      return ret;
-    };
+    const { timer: { running } } = this.store.getState();
     const [[message, ...parameters], hexMsg] = decode(data);
     switch (nameOf(message)) {
       case 'READER_EVENT_NOTIFICATION':
-        console.log(nameOf(message), parameters);
+        // log.info(nameOf(message));
         conn.write(llrpMessages.getReaderConfig());
         break;
       case 'GET_READER_CONFIG_RESPONSE':
-        console.log(nameOf(message), parameters);
+        // log.info(nameOf(message));
         conn.write(llrpMessages.setReaderConfig());
         break;
       case 'SET_READER_CONFIG_RESPONSE':
-        console.log(nameOf(message), read(parameters));
+        // log.info(nameOf(message), read(parameters));
         conn.write(llrpMessages.deleteROSpec());
         break;
       case 'DELETE_ROSPEC_RESPONSE':
-        console.log(nameOf(message), read(parameters));
+        // log.info(nameOf(message), read(parameters));
         conn.write(llrpMessages.addROSpec());
         break;
       case 'ADD_ROSPEC_RESPONSE':
-        console.log(nameOf(message), read(parameters));
+        // log.info(nameOf(message), read(parameters));
         conn.write(llrpMessages.enableROSpec());
         break;
       case 'ENABLE_ROSPEC_RESPONSE':
-        console.log(nameOf(message), read(parameters));
+        // log.info(nameOf(message), read(parameters));
         conn.write(llrpMessages.startROSpec());
         break;
       case 'START_ROSPEC_RESPONSE':
-        console.log(nameOf(message), read(parameters));
+        // log.info(nameOf(message), read(parameters));
+        log.info(`LLRP Server ready!: ${conn.remoteAddress}:${conn.remotePort}`);
         break;
       case 'KEEPALIVE':
-        console.log(nameOf(message), read(parameters));
+        // log.info(nameOf(message), read(parameters));
         conn.write(llrpMessages.keepAliveAck());
         break;
       case 'RO_ACCESS_REPORT': {
-        console.log(nameOf(message), parameters);
-        const tags = getTags(hexMsg);
+        if (running) {
+          // log.info(nameOf(message));
+          const tags = getTags(hexMsg, LLRP_TAG_REGEX);
+          if (tags) { tags.forEach(tag => this.writeData(['RSBI', tag, '', ''], conn.remoteAddress)); }
+        }
         break;
       }
       default:
-        console.log(message, parameters, data);
+        // log.info(`${nameOf(message)}`);
     }
   }
 }
