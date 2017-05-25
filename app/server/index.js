@@ -281,57 +281,73 @@ export default class RfidRelay {
           }
         }, 500);
       });
+      llrpConns[i].on('data', (data) => (this.handleLLRPData(llrpConns[i], data)));
       llrpConns[i].on('error', () => {
-        isConnected = false;
         log.error(`${host}:${port}: Could not connect to LLRP Server.`);
         console.log(port, 'couldn\'t connect');
       });
-      llrpConns[i].on('end', () => { isConnected = false; console.log(port, 'connection ended'); });
-      llrpConns[i].on('data', (data) => {
-        const nameOf = (obj) => Object.keys(obj)[0];
-        const read = (obj) => parseInt(obj[0].LLRPStatus.value, 16) ? hexToText(obj[0].LLRPStatus.value) : 'Success!';
-        const [message, ...parameters] = decode(data);
-        switch (nameOf(message)) {
-          case 'READER_EVENT_NOTIFICATION':
-            console.log(nameOf(message), parameters);
-            llrpConns[i].write(llrpMessages.getReaderConfig());
-            break;
-          case 'GET_READER_CONFIG_RESPONSE':
-            console.log(nameOf(message), parameters);
-            llrpConns[i].write(llrpMessages.setReaderConfig());
-            break;
-          case 'SET_READER_CONFIG_RESPONSE':
-            console.log(nameOf(message), read(parameters));
-            llrpConns[i].write(llrpMessages.deleteROSpec());
-            break;
-          case 'DELETE_ROSPEC_RESPONSE':
-            console.log(nameOf(message), read(parameters));
-            llrpConns[i].write(llrpMessages.addROSpec());
-            break;
-          case 'ADD_ROSPEC_RESPONSE':
-            console.log(nameOf(message), read(parameters));
-            llrpConns[i].write(llrpMessages.enableROSpec());
-            break;
-          case 'ENABLE_ROSPEC_RESPONSE':
-            console.log(nameOf(message), read(parameters));
-            llrpConns[i].write(llrpMessages.startROSpec());
-            break;
-          case 'START_ROSPEC_RESPONSE':
-            console.log(nameOf(message), read(parameters));
-            break;
-          case 'KEEPALIVE':
-            console.log(nameOf(message), read(parameters));
-            llrpConns[i].write(llrpMessages.keepAliveAck());
-            break;
-          case 'RO_ACCESS_REPORT':
-            console.log(nameOf(message), parameters);
-            log.info('Tag found!');
-            break;
-          default:
-            console.log(port, message, parameters, data);
-        }
+      llrpConns[i].on('end', () => {
+        isConnected = false;
+        console.log(port, 'connection ended');
       });
       llrpConns[i].connect({ host, port });
     });
+  }
+
+  handleLLRPData = (conn, data) => {
+    const nameOf = (obj) => Object.keys(obj)[0];
+    const read = (obj) => (parseInt(obj[0].LLRPStatus.value, 16) ? hexToText(obj[0].LLRPStatus.value) : 'Success!');
+    const getTags = (str, reg, ret) => {
+      if (str.length < 1) return undefined;
+      const arry = str.match(reg);
+      if (arry && arry.index > 0) {
+        getTags(str.slice(arry.index + 1), reg, ret);
+      } else {
+        return undefined;
+      }
+      ret.push(arry[2]);
+      return ret;
+    };
+    const [[message, ...parameters], hexMsg] = decode(data);
+    switch (nameOf(message)) {
+      case 'READER_EVENT_NOTIFICATION':
+        console.log(nameOf(message), parameters);
+        conn.write(llrpMessages.getReaderConfig());
+        break;
+      case 'GET_READER_CONFIG_RESPONSE':
+        console.log(nameOf(message), parameters);
+        conn.write(llrpMessages.setReaderConfig());
+        break;
+      case 'SET_READER_CONFIG_RESPONSE':
+        console.log(nameOf(message), read(parameters));
+        conn.write(llrpMessages.deleteROSpec());
+        break;
+      case 'DELETE_ROSPEC_RESPONSE':
+        console.log(nameOf(message), read(parameters));
+        conn.write(llrpMessages.addROSpec());
+        break;
+      case 'ADD_ROSPEC_RESPONSE':
+        console.log(nameOf(message), read(parameters));
+        conn.write(llrpMessages.enableROSpec());
+        break;
+      case 'ENABLE_ROSPEC_RESPONSE':
+        console.log(nameOf(message), read(parameters));
+        conn.write(llrpMessages.startROSpec());
+        break;
+      case 'START_ROSPEC_RESPONSE':
+        console.log(nameOf(message), read(parameters));
+        break;
+      case 'KEEPALIVE':
+        console.log(nameOf(message), read(parameters));
+        conn.write(llrpMessages.keepAliveAck());
+        break;
+      case 'RO_ACCESS_REPORT': {
+        console.log(nameOf(message), parameters);
+        const tags = getTags(hexMsg);
+        break;
+      }
+      default:
+        console.log(message, parameters, data);
+    }
   }
 }
