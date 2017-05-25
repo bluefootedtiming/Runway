@@ -230,7 +230,7 @@ export default class RfidRelay {
         moment(startTime).format('YYYYMMDDhhmmss'),
         `${formattedArray[3] || 'unmappedEvent'}.csv`
       ),
-      `${formattedArray.concat(data[2]).join(',')}\r`
+      `${formattedArray.join(',')}\r`
     );
   }
 
