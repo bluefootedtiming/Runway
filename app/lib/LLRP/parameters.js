@@ -5,7 +5,7 @@ import * as constants from './parameterConstants';
 export type propertyType = {
   name: string,
   value: string,
-  length: string
+  length: number
 };
 
 export type parameterConstantType = {
