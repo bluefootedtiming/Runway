@@ -23,7 +23,7 @@ const TV_PRM_HEADER = {
 
 const isTV = (val: string) => parseInt(val[0], 16).toString(2)[0] === '1';
 
-const extractHeader = (str: string, headerConst: object) => {
+const extractHeader = (str: string, headerConst: Object) => {
   const header = {};
   Object.entries(headerConst).forEach(([name, [start, end]]) => {
     if (name === 'headerType') return;
@@ -63,7 +63,7 @@ const decodeMessage = (msg: string) => {
   ]);
 };
 
-const decodeParameter = (param: string, decodedMessage: array) => {
+const decodeParameter = (param: string, decodedMessage: Array<Object>) => {
   const { header, restOfParam } = isTV(param) ? handleTV(param) : handleTLV(param);
   const [name, attrs] = Object.entries(P_CONSTANTS).find(([, val]) => (
     val.id === parseInt(header.type, 16)

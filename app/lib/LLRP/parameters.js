@@ -2,6 +2,12 @@ import * as properties from './properties';
 import * as constants from './parameterConstants';
 
 
+export type propertyType = {
+  name: string,
+  value: string,
+  length: string
+};
+
 export type parameterConstantType = {
   id: number,
   tvLength: number,         // This is the length of the TV parameter

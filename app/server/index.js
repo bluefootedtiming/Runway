@@ -47,7 +47,7 @@ const hexToText = (val: string) => {
   }
   return str;
 };
-const read = (obj) => (parseInt(obj[0].LLRPStatus.value, 16) ? hexToText(obj[0].LLRPStatus.value) : 'Success!');
+const read = (obj) => (parseInt(obj[0].LLRPStatus.value, 16) ? hexToText(obj[0].LLRPStatus.value) : 'Success!'); // eslint-disable-line
 const getTags = (str: string, reg: RegExp, ret: Array<string> = []) => {
   if (str.length < 1) { return undefined; }
   const arry = str.match(reg);
@@ -268,7 +268,7 @@ export default class RfidRelay {
     *                            => ['RSBI', '452', '00:01:20.002', 'Start']
     * @memberOf RfidRelay
     */
-  getFormattedReaderData = (readerDataArray: Array<string>, readerAddress: any) => {
+  getFormattedReaderData = (readerDataArray: Array<string>, readerAddress: string) => {
     const { config: { readerMap }, timer: { startTime } } = this.store.getState();
     const elapsed = moment.duration(moment.now() - startTime);
     const newData = readerDataArray.slice();
@@ -314,7 +314,7 @@ export default class RfidRelay {
 
   handleLLRPData = (conn, data) => {
     const { timer: { running } } = this.store.getState();
-    const [[message, ...parameters], hexMsg] = decode(data);
+    const [[message, ...parameters], hexMsg] = decode(data); // eslint-disable-line
     switch (nameOf(message)) {
       case 'READER_EVENT_NOTIFICATION':
         // log.info(nameOf(message));
