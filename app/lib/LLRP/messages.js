@@ -25,22 +25,22 @@ export const addROSpec = () => (
           AntennaCount: '1',
           AntennaID: '0',
           AISpecStopTrigger: {
-            AISpecStopTriggerType: '1',
-            DurationTriggerValue: '3e8'
+            AISpecStopTriggerType: '0',
+            DurationTriggerValue: '0'
           },
           InventoryParameterSpec: {
-            InventoryParameterSpecID: '1',
+            InventoryParameterSpecID: '9',
             ProtocolID: '1'
           }
         },
         ROReportSpec: {
           ROReportTrigger: '1',
-          ROReportTriggerNValue: '0',
+          ROReportTriggerNValue: '1',
           TagReportContentSelector: {
             TagReportContentSelectorValue: '0000',
-            C1G2EPCMemorySelector: {
-              C1G2EPCMemorySelectorValue: 'c0'
-            },
+            // C1G2EPCMemorySelector: {
+            //   C1G2EPCMemorySelectorValue: 'c0'
+            // },
           // },
           // Custom: {
           //   VendorID: '67ba',
