@@ -1,45 +1,21 @@
 import net from 'net';
-import moment from 'moment';
 import path from 'path';
-import jetpack from 'fs-jetpack';
+import moment from 'moment';
 
-import { addMessage, setRSServerConnection } from '../actions/status';
+import { LLRP_TAG_REGEX, MAX_CONNECT_ATTEMPTS } from '../constants';
+import { setRSServerConnection } from '../actions/status';
 import * as llrpMessages from '../lib/LLRP/messages';
 import decode from '../lib/LLRP/decode';
+import log from '../lib/logger';
 
-const { app } = require('electron').remote;
-
-export const LLRP_TAG_REGEX = /(00f0000c00f100080010)((\d){4})/;
-export const MAX_CONNECT_ATTEMPTS = 5;
-export const LOCAL_FOLDER = 'AlienRunwayData';
-export const DOCUMENTS_PATH = app.getPath('documents');
-export const LOGS_PATH = `${DOCUMENTS_PATH}/${LOCAL_FOLDER}`;
-// TODO: It would be nice to have the structure of logging changes
-//        so that debug messages could be shown and/or not shown.
-export const log = {
-  store: null,
-  info(...messages: string | Array<string>) {
-    this.write(0, messages);
-  },
-  hexInfo(...messages: string | Array<string>) {
-    this.write(0, messages);
-  },
-  error(...messages: string | Array<string>) {
-    this.write(1, messages);
-  },
-  write(code: number, messages: string | Array<string>) {
-    if (Array.isArray(messages)) {
-      this.store.dispatch(addMessage(messages.join(), code));
-    } else {
-      this.store.dispatch(addMessage(messages, code));
-    }
-  }
-};
 
 // ===============
 // LLRP helper functions
 // ===============
 const nameOf = (obj) => Object.keys(obj)[0];
+const read = (obj) => (
+  parseInt(obj[0].LLRPStatus.value, 16) ? hexToText(obj[0].LLRPStatus.value) : 'Success!'
+); // eslint-disable-line
 const hexToText = (val: string) => {
   let str = '';
   for (let i = 0; i < val.length; i += 2) {
@@ -47,7 +23,6 @@ const hexToText = (val: string) => {
   }
   return str;
 };
-const read = (obj) => (parseInt(obj[0].LLRPStatus.value, 16) ? hexToText(obj[0].LLRPStatus.value) : 'Success!'); // eslint-disable-line
 const getTags = (str: string, reg: RegExp, ret: Array<string> = []) => {
   if (str.length < 1) { return undefined; }
   const arry = str.match(reg);
@@ -223,14 +198,9 @@ export default class RfidRelay {
     } = this.store.getState();
     const formattedArray = this.getFormattedReaderData(data, readerAddress);
     if (runScoreServerConnected) this.runScore.write(`${formattedArray.join(',')}\r`);
-
-    jetpack.appendAsync(
-      path.join(
-        LOGS_PATH,
-        moment(startTime).format('YYYYMMDDhhmmss'),
-        `${formattedArray[3] || 'unmappedEvent'}.csv`
-      ),
-      `${formattedArray.join(',')}\r`
+    log.file(
+      formattedArray.join(','),
+      path.join(`${moment(startTime).format('YYYYMMDDhhmmss')}`, `${formattedArray[3] || 'unmappedEvent'}.csv`)
     );
   }
 
@@ -344,7 +314,7 @@ export default class RfidRelay {
         break;
       case 'START_ROSPEC_RESPONSE':
         // log.info(nameOf(message), read(parameters));
-        log.info(`LLRP Server ready!: ${conn.remoteAddress}:${conn.remotePort}`);
+        log.info(`LLRP Server ready on: ${conn.remoteAddress}:${conn.remotePort}`);
         break;
       case 'KEEPALIVE':
         // log.info(nameOf(message), read(parameters));

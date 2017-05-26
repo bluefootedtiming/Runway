@@ -8,9 +8,7 @@ import TimerPanel from '../../containers/TimerPanel';
 import Toolbar from '../../containers/AppToolbar';
 
 import { relay } from '../../index';
-import { LOGS_PATH } from '../../server';
-
-export const CONFIG_PATH = `${LOGS_PATH}/config.json`;
+import log from '../../lib/logger';
 
 export default class Home extends Component {
   props: {
@@ -19,7 +17,7 @@ export default class Home extends Component {
 
   // Load the configuration files
   componentWillMount() {
-    const config = jetpack.read(CONFIG_PATH, 'json');
+    const config = jetpack.read(log.configPath(), 'json');
     if (config) {
       this.props.loadConfigurations({
         ...config,
@@ -27,7 +25,7 @@ export default class Home extends Component {
         listenPort: Number(config.listenPort) || 0
       });
     } else {
-      jetpack.file(CONFIG_PATH, { content: {} });
+      jetpack.file(log.configPath(), { content: {} });
     }
 
     relay.start();
