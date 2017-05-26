@@ -199,7 +199,7 @@ export default class RfidRelay {
     const formattedArray = this.getFormattedReaderData(data, readerAddress);
     if (runScoreServerConnected) this.runScore.write(`${formattedArray.join(',')}\r`);
     log.file(
-      `${formattedArray.join(',')}\r`,
+      formattedArray.join(','),
       path.join(`${moment(startTime).format('YYYYMMDDhhmmss')}`, `${formattedArray[3] || 'unmappedEvent'}.csv`)
     );
   }
@@ -314,7 +314,7 @@ export default class RfidRelay {
         break;
       case 'START_ROSPEC_RESPONSE':
         // log.info(nameOf(message), read(parameters));
-        log.info(`LLRP Server ready!: ${conn.remoteAddress}:${conn.remotePort}`);
+        log.info(`LLRP Server ready on: ${conn.remoteAddress}:${conn.remotePort}`);
         break;
       case 'KEEPALIVE':
         // log.info(nameOf(message), read(parameters));
