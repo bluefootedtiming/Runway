@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import jetpack from 'fs-jetpack';
 import os from 'os';
 
 import { readerMapType, eventsType } from '../../actions/config';
-import { CONFIG_PATH } from '../Home';
+import log from '../../lib/logger';
 
 import SyncReaders from '../../containers/AppSyncReaders';
 
@@ -128,8 +127,7 @@ class Configuration extends Component {
     this.props.setReaderMap(readerMap);
     this.setState({ readerMap });
 
-    jetpack.write(
-      CONFIG_PATH,
+    log.file('config.json',
       {
         runScoreAddress,
         runScorePort,
