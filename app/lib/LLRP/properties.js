@@ -69,170 +69,172 @@ const initProp = (value: string | Array<number> | null, base: string, length: nu
   }
 };
 
-/**
-  * Reserved
-  *
-  * Used for any reserved bits inside of a parameter
-  *
-  * @param {number} length
-  */
-export function Reserved(length) {
-  return {
-    name: 'Reserved',
-    ...initProp('0', 'hex', length)
-  };
-}
+export default class Properties {
+  /**
+    * Reserved
+    *
+    * Used for any reserved bits inside of a parameter
+    *
+    * @param {number} length
+    */
+  static Reserved(length) {
+    return {
+      name: 'Reserved',
+      ...initProp('0', 'hex', length)
+    };
+  }
 
-export function ROSpecCurrentState(value) {
-  return {
-    name: 'ROSpecCurrentState',
-    ...initProp(value, 'hex', 8)
-  };
-}
+  static ROSpecCurrentState(value) {
+    return {
+      name: 'ROSpecCurrentState',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 
-export function ROSpecPriority(value) {
-  return {
-    name: 'ROSpecPriority',
-    ...initProp(value, 'hex', 8)
-  };
-}
+  static ROSpecPriority(value) {
+    return {
+      name: 'ROSpecPriority',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 
-export function ROSpecID(value) {
-  return {
-    name: 'ROSpecID',
-    ...initProp(value, 'hex', 32)
-  };
-}
+  static ROSpecID(value) {
+    return {
+      name: 'ROSpecID',
+      ...initProp(value, 'hex', 32)
+    };
+  }
 
-export function ROSpecStartTriggerType(value) {
-  return {
-    name: 'ROSpecStartTriggerType',
-    ...initProp(value, 'hex', 8)
-  };
-}
+  static ROSpecStartTriggerType(value) {
+    return {
+      name: 'ROSpecStartTriggerType',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 
-export function ROSpecStopTriggerType(value) {
-  return {
-    name: 'ROSpecStopTriggerType',
-    ...initProp(value, 'hex', 8)
-  };
-}
+  static ROSpecStopTriggerType(value) {
+    return {
+      name: 'ROSpecStopTriggerType',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 
-export function DurationTriggerValue(value) {
-  return {
-    name: 'DurationTriggerValue',
-    ...initProp(value, 'hex', 32)
-  };
-}
+  static DurationTriggerValue(value) {
+    return {
+      name: 'DurationTriggerValue',
+      ...initProp(value, 'hex', 32)
+    };
+  }
 
-export function AntennaCount(value) {
-  return {
-    name: 'AntennaCount',
-    ...initProp(value, 'hex', 16)
-  };
-}
+  static AntennaCount(value) {
+    return {
+      name: 'AntennaCount',
+      ...initProp(value, 'hex', 16)
+    };
+  }
 
-export function AntennaID(value) {
-  return {
-    name: 'AntennaID',
-    ...initProp(value, 'hex', 16)
-  };
-}
+  static AntennaID(value) {
+    return {
+      name: 'AntennaID',
+      ...initProp(value, 'hex', 16)
+    };
+  }
 
-export function AISpecStopTriggerType(value) {
-  return {
-    name: 'AISpecStopTriggerType',
-    ...initProp(value, 'hex', 8)
-  };
-}
+  static AISpecStopTriggerType(value) {
+    return {
+      name: 'AISpecStopTriggerType',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 
-export function InventoryParameterSpecID(value) {
-  return {
-    name: 'InventoryParameterSpecID',
-    ...initProp(value, 'hex', 16)
-  };
-}
+  static InventoryParameterSpecID(value) {
+    return {
+      name: 'InventoryParameterSpecID',
+      ...initProp(value, 'hex', 16)
+    };
+  }
 
-export function ProtocolID(value) {
-  return {
-    name: 'ProtocolID',
-    ...initProp(value, 'hex', 8)
-  };
-}
+  static ProtocolID(value) {
+    return {
+      name: 'ProtocolID',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 
-export function ROReportTrigger(value) {
-  return {
-    name: 'ROReportTrigger',
-    ...initProp(value, 'hex', 8)
-  };
-}
+  static ROReportTrigger(value) {
+    return {
+      name: 'ROReportTrigger',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 
-export function ROReportTriggerNValue(value) {
-  return {
-    name: 'ROReportTriggerNValue',
-    ...initProp(value, 'hex', 16)
-  };
-}
+  static ROReportTriggerNValue(value) {
+    return {
+      name: 'ROReportTriggerNValue',
+      ...initProp(value, 'hex', 16)
+    };
+  }
 
-export function TagReportContentSelectorValue(value) {
-  return {
-    name: 'TagReportContentSelectorValue',
-    ...initProp(value, 'hex', 16)
-  };
-}
+  static TagReportContentSelectorValue(value) {
+    return {
+      name: 'TagReportContentSelectorValue',
+      ...initProp(value, 'hex', 16)
+    };
+  }
 
-export function C1G2EPCMemorySelectorValue(value) {
-  return {
-    name: 'C1G2EPCMemorySelectorValue',
-    ...initProp(value, 'hex', 8)
-  };
-}
+  static C1G2EPCMemorySelectorValue(value) {
+    return {
+      name: 'C1G2EPCMemorySelectorValue',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 
-export function GPIPortNumber(value) {
-  return {
-    name: 'GPIPortNumber',
-    ...initProp(value, 'hex', 16)
-  };
-}
+  static GPIPortNumber(value) {
+    return {
+      name: 'GPIPortNumber',
+      ...initProp(value, 'hex', 16)
+    };
+  }
 
-export function GPOPortNumber(value) {
-  return {
-    name: 'GPOPortNumber',
-    ...initProp(value, 'hex', 16)
-  };
-}
+  static GPOPortNumber(value) {
+    return {
+      name: 'GPOPortNumber',
+      ...initProp(value, 'hex', 16)
+    };
+  }
 
-export function RequestedData(value) {
-  return {
-    name: 'RequestedData',
-    ...initProp(value, 'hex', 8)
-  };
-}
+  static RequestedData(value) {
+    return {
+      name: 'RequestedData',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 
-export function EventsAndReports(value) {
-  return {
-    name: 'EventsAndReports',
-    ...initProp(value, 'hex', 2)
-  };
-}
+  static EventsAndReports(value) {
+    return {
+      name: 'EventsAndReports',
+      ...initProp(value, 'hex', 2)
+    };
+  }
 
-export function VendorID(value) {
-  return {
-    name: 'VendorID',
-    ...initProp(value, 'hex', 32)
-  };
-}
+  static VendorID(value) {
+    return {
+      name: 'VendorID',
+      ...initProp(value, 'hex', 32)
+    };
+  }
 
-export function Subtype(value) {
-  return {
-    name: 'Subtype',
-    ...initProp(value, 'hex', 32)
-  };
-}
+  static Subtype(value) {
+    return {
+      name: 'Subtype',
+      ...initProp(value, 'hex', 32)
+    };
+  }
 
-export function VendorParameterValue(value) {
-  return {
-    name: 'VendorParameterValue',
-    ...initProp(value, 'hex', 8)
-  };
+  static VendorParameterValue(value) {
+    return {
+      name: 'VendorParameterValue',
+      ...initProp(value, 'hex', 8)
+    };
+  }
 }
