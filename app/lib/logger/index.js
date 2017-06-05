@@ -25,15 +25,28 @@ class Log {
 
   file(messages: string | Array<string>, fileName: string | Array<string> = '') {
     const msg = Array.isArray(messages) ? messages.join('') : messages;
-    if (fileName) { this.toFilename(fileName, msg); } else { this.toDebug(msg); }
+    switch (fileName) {
+      case 'config':
+        this.toConfig(msg);
+        break;
+      case 'debug':
+        this.toDebug(msg);
+        break;
+      default:
+        this.toFilename(msg, fileName);
+    }
   }
 
-  toFilename(fileName: string | Array<string>, msg: string) {
+  toFilename(msg: string, fileName: string | Array<string>) {
     jetpack.appendAsync(path.join(this.dataPath(), fileName), `${msg}\r`);
   }
 
   toDebug(msg: string) {
     jetpack.appendAsync(this.debugPath(), `[${moment()}]: ${msg}\r`);
+  }
+
+  toConfig(msg: string) {
+    jetpack.write(path.join(this.configPath()), `${msg}\r`);
   }
 
   info(...messages: string | Array<string>) {
