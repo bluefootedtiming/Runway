@@ -122,21 +122,19 @@ class Configuration extends Component {
     if (listenPort) { this.props.setListenPort(Number(listenPort)); }
 
     const readerMap = this.state.readerMap.filter(({ address, port, event }) => (
-      address && event && !isNaN(parseInt(port, 10))
+      address && event && (!port || !isNaN(parseInt(port, 10)))
     ));
     this.props.setReaderMap(readerMap);
     this.setState({ readerMap });
 
-    log.file('config.json',
-      {
-        runScoreAddress,
-        runScorePort,
-        listenAddress,
-        listenPort,
-        readerMap,
-        events
-      }
-    );
+    log.file(JSON.stringify({
+      runScoreAddress,
+      runScorePort,
+      listenAddress,
+      listenPort,
+      readerMap,
+      events
+    }), 'config.json');
     notify('Conifgurations saved!');
   }
 
