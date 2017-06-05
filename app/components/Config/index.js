@@ -127,14 +127,14 @@ class Configuration extends Component {
     this.props.setReaderMap(readerMap);
     this.setState({ readerMap });
 
-    log.file(JSON.stringify({
+    log.toConfig(JSON.stringify({
       runScoreAddress,
       runScorePort,
       listenAddress,
       listenPort,
       readerMap,
       events
-    }), 'config.json');
+    }));
     notify('Conifgurations saved!');
   }
 
