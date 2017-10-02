@@ -18,11 +18,16 @@ const ReaderFields = (props) => (
       defaultValue={props.port}
       onBlur={(val) => props.onChangeValue('port', props.address, val.target.value)}
     />
+    {/*
+      XXX: isLLRP checkbox is now an "isn'tLLRP" checkbox
+        checked   => not LLRP
+        unchecked => is LLRP
+    */}
     <input
       name="isLLRP"
       type="checkbox"
-      value={props.isLLRP}
-      checked={props.isLLRP}
+      value={!props.isLLRP}
+      checked={!props.isLLRP}
       onChange={() => props.onChangeValue('isLLRP', props.address, !props.isLLRP)}
     />
     <DropdownSelect
