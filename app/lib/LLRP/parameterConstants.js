@@ -8,7 +8,7 @@
   * Edited by Oak.Works
   */
 
-/* eslint-disable max-len*/
+/* eslint-disable max-len */
 
 // General Parameters
 export const UTCTimeStamp = { id: 128, hasSubParameter: false, tvLength: 0, staticLength: 12 };
