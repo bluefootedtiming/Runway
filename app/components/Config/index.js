@@ -145,11 +145,11 @@ class Configuration extends Component {
       <section style={styles.input}>
         <h1>Configuration</h1>
 
-        <h2>RunScore</h2>
+        <h2>RunScore Server</h2>
         <input placeholder="Address" name="runScoreAddress" defaultValue={runScoreAddress} ref={c => (this.runScoreAddress = c)} />
         <input placeholder="Port" name="runScorePort" defaultValue={runScorePort} ref={c => (this.runScorePort = c)} />
 
-        <h2>Alien Runway</h2>
+        <h2>Runway Server</h2>
         <aside>
           RFID Readers should use the IP address of this
           computer and the port listed below in as <b>TagStreamAddress</b>
@@ -177,7 +177,7 @@ class Configuration extends Component {
           onRemoveReader={this.handleRemoveReader}
         />
         <small>
-          **Note: Uncheck reader if nonLLRP
+          **Note: Uncheck reader if LLRP
         </small>
         <br />
         <ButtonBar>
@@ -188,6 +188,7 @@ class Configuration extends Component {
             Edit Events
           </Button>
           <SyncReaders
+            title="Sync Aliens"
             listenAddress={this.props.listenAddress}
             listenPort={this.props.listenPort}
             readerMap={this.props.readerMap}
