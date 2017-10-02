@@ -12,7 +12,7 @@ import Button from '../Button';
   *
   * @memberOf Configuration
   */
-const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
+const SyncReaders = ({ title, listenAddress, listenPort, readerMap, addMessage }) => {
   /**
     * readerConfigs
     *
@@ -89,7 +89,7 @@ const SyncReaders = ({ listenAddress, listenPort, readerMap, addMessage }) => {
   };
 
   return (
-    <Button onClick={sync} style={{ background: 'blue' }}> Sync Readers </Button>
+    <Button onClick={sync} style={{ background: 'blue' }}> {title} </Button>
   );
 };
 
@@ -100,7 +100,12 @@ export const readerShape = {
   event: string
 };
 
+SyncReaders.defaultProps = {
+  title: 'Sync Readers',
+};
+
 SyncReaders.propTypes = {
+  title: string,
   listenAddress: string.isRequired,
   listenPort: number.isRequired,
   readerMap: arrayOf(shape(readerShape)).isRequired,

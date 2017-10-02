@@ -188,6 +188,7 @@ class Configuration extends Component {
             Edit Events
           </Button>
           <SyncReaders
+            title="Sync Aliens"
             listenAddress={this.props.listenAddress}
             listenPort={this.props.listenPort}
             readerMap={this.props.readerMap}
