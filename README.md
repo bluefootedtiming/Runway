@@ -5,7 +5,7 @@
 
 AlienRunway is a middleware application that connects Alien RFID Readers to RunScore Server. When RFID readers send Bib tag information, AlienRunway inserts the time since start and forwards the message to RunScore. Backup CSVs are created by AlienRunway for each RFID Location in case the connection to RunScore is unavailable. 
 
-AlienRunway is built with Electron and React, which allows it to be used on Windows (newer than XP), OSX, and more!
+AlienRunway is built with [Electron](https://electronjs.org) and [React](https://reactjs.org/), which allows it to be used on Windows (newer than XP), OSX, and more!
 ## QuickStart
 
 1. Go to [releases](https://github.com/oakworks/AlienRunway/releases) 
