@@ -240,12 +240,12 @@ export default class RfidRelay {
     */
   getFormattedReaderData = (readerDataArray: Array<string>, readerAddress: string) => {
     const { config: { readerMap }, timer: { startTime } } = this.store.getState();
-    const elapsed = moment.duration(moment.now() - startTime);
-    const newData = readerDataArray.slice();
+    const newData = readerDataArray.slice(); // copy array for updating
     const reader = readerMap.find(({ address }) => address === readerAddress);
     if (reader) newData[3] = reader.event;
-    newData[2] = `${elapsed.hours()}:${elapsed.minutes()}:${elapsed.seconds()}.${elapsed.milliseconds()}`;
     newData[1] = parseInt(readerDataArray[1], 10);
+    // formatting borrowed from https://stackoverflow.com/a/20981502/2747869
+    newData[2] = moment.utc(moment.now() - startTime).format('HH:mm:ss:SSS');
     return newData;
   }
 
