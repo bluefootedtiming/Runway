@@ -55,7 +55,7 @@ class Configuration extends Component {
 
   /**
     * Grab the ipv4 addresses--except for the localhost. These values fill the
-    * alien runway address dropdown.
+    * runway address dropdown.
     */
   componentWillMount() {
     const listenAddresses = [];

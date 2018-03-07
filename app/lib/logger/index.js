@@ -12,7 +12,7 @@ class Log {
   configFileName: ''
 
   constructor() {
-    this.dataFolder = 'AlienRunwayData';
+    this.dataFolder = 'RunwayData';
     this.configFileName = 'config.json';
     this.debugFileName = 'debug.log';
   }
