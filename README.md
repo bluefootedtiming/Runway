@@ -114,7 +114,7 @@ The TagStream format that RunScore Server accepts is as follows:
 RSBI,<BIB>,<ELASPED_TIME>,<EVENT> 
 ```
 
-Back CSV files can be viewed by navigating to your “My Documents/Documents” folder on your OS, under the folder “Alien Runway Data”. The backup CSV folder structure is as follows:
+Backup CSV files can be viewed by navigating to your “My Documents/Documents” folder on your OS, under the folder “Alien Runway Data”. The backup CSV folder structure is as follows:
 
 ```
 /<USER>/<Documents>/'Alien Runway Data'/<YYYYMMDDhhmmss>/<EVENT>.csv
@@ -151,11 +151,16 @@ yarn run package
 To build for Win32bit, use:
 
 ```
+# If building on Mac for Windows, run these commands (after installing [Homebrew](https://brew.sh/) if needed):
+brew cask install xquartz
+brew install wine gnu-tar
+
+# For everyone:
 yarn run package-win32
 ```
 
-Once built, they can be fiound under `/AlienRunway/release/`
+Once built, they can be found under `release/`
 
-*This project is a fork of Electron React Boilerplate.*
+*This project was originally forked from [Electron React Boilerplate](https://github.com/chentsulin/electron-react-boilerplate).*
 
-*For more developer information see [electron-react-boilerplate](https://github.com/chentsulin/electron-react-boilerplate)*
+*Runway was created for BlueFootedtiming by [Oak.Works](https://oak.works)*
