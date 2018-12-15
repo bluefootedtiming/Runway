@@ -38,7 +38,7 @@ AlienRunway is able to be built for any modern OS that electron is able to be bu
 
 RunScore Server currently only runs on Windows. Meaning if you're running AlienRunway on anything besides Windows, you will need an instance of Windows in order to run RunScore server.
 
-The RFID Reader we use during development as well as support for reader specific functions, such as "Sync Readers", is the ALR-9650. Alien Readers that are also supported are: ALR-9900, ALR-9800, and ALR-8800.
+The RFID Reader used during development as well as support for reader specific functions, such as "Sync Readers", is the Alien ALR-9650. Alien Readers that are also supported are: ALR-9900, ALR-9800, and ALR-8800. LLRP-compliant readers are also supported. Examples of these are Motorola/Zebra (FX-7400, FX-7500, FX-9500) and Impinj (R220, R420) and the Alien-9900+
 
 *For more information on Alien Technology see [Alien Technology](http://www.alientechnology.com/)*
 
