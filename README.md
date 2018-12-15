@@ -8,7 +8,7 @@ AlienRunway is a middleware application that connects Alien RFID Readers to RunS
 AlienRunway is built with [Electron](https://electronjs.org) and [React](https://reactjs.org/), which allows it to be used on Windows (newer than XP), OSX, and more!
 ## QuickStart
 
-1. Go to [releases](https://github.com/oakworks/AlienRunway/releases) 
+1. Go to [releases](https://github.com/oakworks/Runway/releases) 
 1. Download & install either the Windows-32bit exe or the `.dmg`
 1. Run the application
 1. Click on the wrench icon (Configurations)
