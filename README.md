@@ -1,3 +1,6 @@
+Help support this project by adding a bounty on the [issues](https://github.com/bluefootedtiming/Runway/issues) you would like to see resolved.
+
+[![Boss Bounty Badge](https://img.shields.io/endpoint.svg?url=https://api.boss.dev/badge/enabled/REPO_OWNER/REPO_NAME&style=for-the-badge&color=green)](https://www.boss.dev/issues/repo/bluefootedtiming/Runway)
 # AlienRunway
 
 ![Imgur](http://i.imgur.com/CYv4KKlm.png)
